@@ -1,1 +1,100 @@
-<p>join-designer works!</p>
+<mat-drawer-container fxLayout="row">
+    <mat-drawer #cols mode="side" position="end" fxFlex="30%">
+        <ul>
+            <li *ngFor="let table of displayTables;let i = index;" draggable="true" (dragstart)="dragstart(table,i)">
+                {{table.TableName}}
+            </li>
+        </ul>
+    </mat-drawer>
+
+
+    <!-- 主設計畫面 -->
+    <mat-drawer-content fxFlex="70%" style="position: relative;">
+        <!-- 新增 layer -->
+        <button mat-button (click)="addLayer()">Add Layer</button>
+
+        <!-- layer 屬性 -->
+        <mat-tab-group animationDuration="0ms">
+            <mat-tab label="New Layer">
+                <div style="display: flex;">
+                    <p>
+                        <!-- Layer 名稱 -->
+                        <mat-form-field appearance="legacy">
+                            <mat-label>Layer Name</mat-label>
+                            <input [(ngModel)]="LayerName" matInput type="text" placeholder="Name">
+                        </mat-form-field>
+                    </p>
+                    <p>
+                        <!-- MainTable topo/table -->
+                        <mat-form-field appearance="legacy">
+                            <mat-label>Main Table</mat-label>
+                            <mat-select [(ngModel)]="MainTableId" required>
+                                <mat-option *ngFor="let item of layerTableOptions" [value]="item.TableId">{{item.TableName}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </p>
+                    <p>
+                        <!-- topo => objects -->
+                        <mat-form-field appearance="legacy">
+                            <mat-label>Objects</mat-label>
+                            <mat-select [(ngModel)]="MainTableId" required>
+                                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </p>
+                    <p>
+                        <!-- pk table=>schema topo=>properties -->
+                        <mat-form-field appearance="legacy">
+                            <mat-label>Primary Key</mat-label>
+                            <mat-select [(ngModel)]="MainTableId" required>
+                                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </p>
+                    <p>
+                        <!-- long table=>schema-->
+                        <mat-form-field appearance="legacy">
+                            <mat-label>Longitude</mat-label>
+                            <mat-select [(ngModel)]="MainTableId" required>
+                                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </p>
+                    <p>
+                        <!-- lat table=>schema -->
+                        <mat-form-field appearance="legacy">
+                            <mat-label>Latitude</mat-label>
+                            <mat-select [(ngModel)]="MainTableId" required>
+                                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </p>
+                </div>
+            </mat-tab>
+            <mat-tab label="Second">Content 2</mat-tab>
+            <mat-tab label="Third">Content 3</mat-tab>
+        </mat-tab-group>
+
+
+        <div id="chart_container" #chart_container>
+            <!-- <pan-zoom [config]="panzoomConfig"> -->
+            <div class="flowchart-example-container" id="exampleDiv" #exampleDiv></div>
+            <!-- </pan-zoom> -->
+        </div>
+
+
+        <button mat-button (click)="getDatas()">Get Datas</button>
+        <button mat-button (click)="remove()">Remove</button>
+        <!-- 右側可拖曳資料集選項 隱藏/顯示按鈕 -->
+        <button mat-raised-button color="primary" (click)="cols.toggle()">
+            <mat-icon matTooltip="open" *ngIf="!cols.opened">keyboard_arrow_left</mat-icon>
+            <mat-icon matTooltip="close" *ngIf="cols.opened">keyboard_arrow_right</mat-icon>
+        </button>
+        <br />
+    </mat-drawer-content>
+</mat-drawer-container>

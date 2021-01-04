@@ -29,20 +29,29 @@ namespace GraphDesigner.Controllers {
                 }
                 await Task.CompletedTask;
                 dynamic data = null;
+                dynamic schema = null;
+                //table data list<dynamic>
                 if (DataSetEdit.DataType == 0) {
                     try { data = JsonConvert.DeserializeObject<List<dynamic>> (DataSetEdit.Data); } 
                     catch { data = new List<dynamic> (); }
+                    schema = DataSetEdit.Schema?.Split (',');
                 }
+                //topo data json
                 else{
                     try { data = JsonConvert.DeserializeObject<dynamic> (DataSetEdit.Data); } 
                     catch { data = new object(); }
+                    try{
+                        schema = JsonConvert.DeserializeObject<dynamic>(DataSetEdit.Schema);
+                    }
+                    catch{ schema = null; }
                 }
+
 
                 return Ok (JsonConvert.SerializeObject (new {
                     DataSetId = DataSetEdit.DataSetId,
                         DataType = DataSetEdit.DataType,
                         DataSetName = DataSetEdit.DataSetName,
-                        Schema = DataSetEdit.Schema?.Split (','),
+                        Schema = schema,
                         Data = data
                 }, Formatting.Indented));
             } catch (Exception e) {

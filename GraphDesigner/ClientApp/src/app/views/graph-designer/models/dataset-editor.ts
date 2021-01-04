@@ -2,14 +2,14 @@ export interface IDataSetEditUI{
     DataSetId:number,
     DataType:number,
     DataSetName:string,
-    Schema:string[],
+    Schema:string[]|object,
     Data:any[]
 }
 export class DataSetEditUI implements IDataSetEditUI{
     DataSetId: number = 0;
     DataType: number = 0;
     DataSetName: string = 'New DataSet';
-    Schema: string[] = [];
+    Schema: string[]|object = [];
     Data: any[] = []; 
 }
 

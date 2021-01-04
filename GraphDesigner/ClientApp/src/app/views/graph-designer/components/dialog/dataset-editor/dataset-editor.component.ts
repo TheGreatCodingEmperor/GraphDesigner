@@ -21,20 +21,29 @@ export class DatasetEditorComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: IDataSetEditUI,
     private dataSetEditorService: DatasetEditorService,
     private _snackBar: MatSnackBar
-    ) { }
+  ) { }
 
   ngOnInit() {
-    if(this.data.DataType !=0 && this.data.Data){
+    console.log(this.data.Schema);
+    if (this.data.DataType != 0 && this.data.Data) {
       this.jsonText = JSON.stringify(this.data.Data).slice(0, 300).concat("...");
     }
   }
 
   onFileChange(ev) {
-    if (this.data.DataType == 0) {
-      this.openExcel(ev);
-    }
-    else if (this.data.DataType == 1 || this.data.DataType == 2) {
-      this.openJson(ev);
+    switch (this.data.DataType) {
+      case 0: {
+        this.openExcel(ev);
+        break;
+      }
+      case 1: {
+        this.openTopoJson(ev);
+        break;
+      }
+      default: {
+        // this.openTopoJson(ev);
+        break;
+      }
     }
   }
 
@@ -59,13 +68,21 @@ export class DatasetEditorComponent implements OnInit {
     reader.readAsBinaryString(file);
   }
 
-  openJson(ev) {
+  openTopoJson(ev) {
     const reader = new FileReader();
     const file = ev.target.files[0];
     reader.onload = (event) => {
       const data = reader.result as string;
       this.importJson = data;
       this.jsonText = data.slice(0, 300).concat("...");
+      let dataJson = JSON.parse(data);
+
+      let objects = Object.keys(dataJson.objects);
+      let result = {};
+      for (let object of objects) {
+        result[object] = Object.keys(dataJson.objects[object].geometries[0].properties);
+      }
+      this.data.Schema = result;
       // console.log(data);
     }
     reader.readAsBinaryString(file);
@@ -83,13 +100,20 @@ export class DatasetEditorComponent implements OnInit {
     let datasetEditDb: IDataSetEditDB = new DataSetEditDB;
     let schema = null;
     let data = null;
-    if(this.data.DataType == 0){
-      schema = this.data.Schema.join(',');
-      data = JSON.stringify(this.data.Data);
-    }
-    else if(this.data.DataType == 1 || this.data.DataType == 2){
-      schema = null;
-      data = JSON.stringify(JSON.parse(this.importJson));
+    switch (this.data.DataType) {
+      case 0: {
+        schema = (this.data.Schema as string[]).join(',');
+        data = JSON.stringify(this.data.Data);
+        break;
+      }
+      case 1: {
+        schema = JSON.stringify(this.data.Schema);
+        data = JSON.stringify(JSON.parse(this.importJson));
+        break;
+      }
+      default: {
+        break;
+      }
     }
     datasetEditDb = {
       DataSetId: this.data.DataSetId,
@@ -99,10 +123,10 @@ export class DatasetEditorComponent implements OnInit {
       Data: data
     }
     console.log(datasetEditDb);
-    this.dataSetEditorService.SaveDataSetEdit(datasetEditDb).subscribe((res:object)=>{
+    this.dataSetEditorService.SaveDataSetEdit(datasetEditDb).subscribe((res: object) => {
       this.openSnackBar("Save Successful!");
       this.dialogRef.close("yes");
-    },error=>{
+    }, error => {
       this.openSnackBar("Save Failed!");
     });
   }

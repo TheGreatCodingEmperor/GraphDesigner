@@ -58,7 +58,7 @@ export class ProjectManagerComponent implements AfterViewInit {
   }
 
   /** @summary 彈跳視窗 編輯 project 屬性 */
-  editProject(projectId: string | number) {
+  editProject(projectId?: string | number) {
     if (projectId) {
       const spinnerRef = this.dialog.open(ProgressSpinnerComponent, {
         width: '150px',
@@ -101,6 +101,6 @@ export class ProjectManagerComponent implements AfterViewInit {
   }
 
   gotoJoin(projectId:number){
-    this.router.navigate([''],{queryParams:{ProjectId: projectId}});
+    this.router.navigate(['/join'],{queryParams:{ProjectId: projectId}});
   }
 }

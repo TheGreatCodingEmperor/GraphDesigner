@@ -5,11 +5,11 @@ namespace GraphDesigner.Models {
         [Key]
         public int DataSetId { get; set; }
         public int DataType { get; set; }
-        public string? Schema { get; set; }
+        public string Schema { get; set; }
         public string DataSetName { get; set; }
         public string Roles { get; set; }
         public string OrganizationId { get; set; }
-        public string? Data { get; set; }
+        public string Data { get; set; }
     }
 
     public class Project {
@@ -34,6 +34,9 @@ namespace GraphDesigner.Models {
         public string LayerName {get;set;}
         public int ProjectId { get; set; }
         public int MainTableId { get; set; }
+        public string PkColName {get;set;}
+        public string LongitudeColName {get;set;} 
+        public string LatitudeColName {get;set;}
     }
     public class JoinLines {
         [Key]
@@ -53,6 +56,5 @@ namespace GraphDesigner.Models {
         public int LayerId {get;set;}
         public int Left { get; set; }
         public int Top { get; set; }
-
     }
 }
