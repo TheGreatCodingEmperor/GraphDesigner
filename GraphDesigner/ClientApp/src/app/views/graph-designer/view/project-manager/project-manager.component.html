@@ -1,3 +1,4 @@
+<button mat-button color="primary" (click)="editProject()">New Project</button>
 <div class="mat-elevation-z8">
     <table mat-table [dataSource]="dataSource">
   
@@ -9,7 +10,10 @@
 
       <ng-container matColumnDef="React">
         <th mat-header-cell *matHeaderCellDef> React </th>
-        <td mat-cell *matCellDef="let element">  </td>
+        <td mat-cell *matCellDef="let element">
+          <button mat-button color="primary" (click)="editProject(element['ProjectId'])">Edit Project</button>
+          <button mat-button color="primary" (click)="gotoJoin(element['ProjectId'])">Join</button>
+        </td>
       </ng-container>
   
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

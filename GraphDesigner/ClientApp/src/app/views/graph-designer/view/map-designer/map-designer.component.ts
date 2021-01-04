@@ -16,6 +16,12 @@ export class MapDesignerComponent implements OnInit {
   private center = { x: 500 / 2, y: 500 / 2 };
   /** @summary 游標彈跳文字框 */
   public tooltip: any;
+  public layers = [
+    {name:"",mainTable:[],join:[]},
+    {name:"",mainTable:[],join:[]},
+    {name:"",mainTable:[],join:[]},
+    {name:"",mainTable:[],join:[]},
+  ];
 
   public schema = [
     {

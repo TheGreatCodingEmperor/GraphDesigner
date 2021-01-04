@@ -1,1 +1,41 @@
-<p>project-editor works!</p>
+<h1 mat-dialog-title>Project:{{data.project.ProjectName}}</h1>
+<div mat-dialog-content>
+    <!-- Project 名稱 -->
+    <p>
+        <mat-form-field appearance="legacy">
+            <mat-label>Project Name</mat-label>
+            <input [(ngModel)]="data.project.ProjectName" matInput type="text" placeholder="Name">
+        </mat-form-field>
+    </p>
+    <!-- Project 種類 -->
+    <p>
+        <mat-form-field appearance="legacy">
+            <mat-label>Project Type</mat-label>
+            <mat-select [(ngModel)]="data.project.ProjectType" required>
+                <mat-option [value]="1">Map</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </p>
+    <!-- MainTable -->
+    <p>
+        <mat-form-field appearance="legacy">
+            <mat-label>Main Table</mat-label>
+            <mat-select [(ngModel)]="data.project.MainTableId" required>
+                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </p>
+    <!-- project Datas -->
+    <p>
+        <mat-form-field appearance="legacy">
+            <mat-label>datas</mat-label>
+            <mat-select [(ngModel)]="data.project.ProjectDataIds" multiple>
+                <mat-option *ngFor="let item of data.dataSetList" [value]="item.value">{{item.label}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </p>
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button (click)="onYesClick()" cdkFocusInitial>Ok</button>
+</div>

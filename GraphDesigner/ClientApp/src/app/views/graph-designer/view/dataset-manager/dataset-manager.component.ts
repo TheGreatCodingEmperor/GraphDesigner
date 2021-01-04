@@ -49,7 +49,7 @@ export class DatasetManagerComponent implements AfterViewInit {
         height: '150px',
         data: null
       });
-  
+
       this.dataSetEditorService.GetDataSetEdit(dataSetId).subscribe((res: IDataSetEditUI) => {
         spinnerRef.close();
         this.openDialog(res);

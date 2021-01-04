@@ -19,12 +19,12 @@ namespace GraphDesigner.Controllers {
             _efCoreHelper = efCoreHelper;
         }
 
-        [HttpGet ("ProjectList")]
+        [HttpGet ("ProjectMangerList")]
         /// <summary>
         /// 取得專案清單(名稱、種類)
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> GetProjectList () {
+        public async Task<IActionResult> GetProjectMangerList () {
             try {
                 var projectList = _efCoreHelper.GetList<Project> (_context).Select (x => new {
                     ProjectId = x.ProjectId,
@@ -36,6 +36,13 @@ namespace GraphDesigner.Controllers {
             } catch (Exception e) {
                 return BadRequest(new { Result = e.ToString() });
             }
+        }
+
+        [HttpGet("DatasetList")]
+        public async Task<IActionResult> GetDataSetList(){
+            var dataSetList = _efCoreHelper.GetList<DataSet>(_context).Select(x => new {Label=x.DataSetName,Value = x.DataSetId, Type= x.DataType}).ToList();
+            await Task.CompletedTask;
+            return Ok(JsonConvert.SerializeObject(dataSetList,Formatting.Indented));
         }
     }
 }

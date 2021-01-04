@@ -1,24 +1,22 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { IProjectEditDB } from '../models/project-editor';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ProjectManagerService {
-
-  constructor(
-    protected http:HttpClient
-  ) { }
-
-  GetProjectList():Observable<any>{
-    return this.http.get(`${this.baseUrl()}/UI/ProjectManager/ProjectMangerList`);
+export class ProjectEditorService {
+  constructor(private http: HttpClient) { }
+  GetDataSetEdit(Id:string|number): Observable<any> {
+    return this.http.get(`${this.baseUrl()}/UI/ProjectEditor/GetDataSetEdit/${Id}`);
   }
 
-  GetDatasetList():Observable<any>{
-    return this.http.get(`${this.baseUrl()}/UI/ProjectManager/DatasetList`);
+  SaveProjectEdit(body:{project:IProjectEditDB,projectDataIds:number[]}): Observable<any> {
+    return this.http.patch(`${this.baseUrl()}/UI/ProjectEditor/SaveProjectEdit`,body);
   }
   
+
   public baseUrl() {
     let base = '';
 
