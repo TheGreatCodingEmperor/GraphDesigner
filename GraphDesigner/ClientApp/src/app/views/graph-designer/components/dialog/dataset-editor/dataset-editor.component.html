@@ -1,0 +1,60 @@
+<h1 mat-dialog-title>Dataset:{{data.DatasetName}}</h1>
+
+<div mat-dialog-content>
+    <!-- 資料集名稱 -->
+    <p>
+        <mat-form-field appearance="legacy">
+            <mat-label>Name</mat-label>
+            <input [(ngModel)]="data.DataSetName" matInput type="text" placeholder="Name">
+        </mat-form-field>
+    </p>
+
+    <!-- 資料集種類 -->
+    <p>
+        <mat-form-field appearance="legacy">
+            <mat-label>Data Type</mat-label>
+            <mat-select [(ngModel)]="data.DataType" required>
+                <mat-option>-- None --</mat-option>
+                <mat-option [value]="0">Table</mat-option>
+                <mat-option [value]="1">TopoJson</mat-option>
+                <mat-option [value]="2">GeoJson</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </p>
+
+    <!-- 匯入檔案 -->
+    <div *ngIf="data.DataType == 0">
+        <!-- excel -->
+        <input type="file" (change)="onFileChange($event)"
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+        <mat-radio-group [(ngModel)]="data.Data" (change)="handleChange($event)">
+            <mat-radio-button *ngFor="let page of dataPages" class="example-margin" [value]="importExcel[page]">{{page}}
+            </mat-radio-button>
+        </mat-radio-group>
+
+        <!-- 表頭+表身 -->
+        <table mat-table [dataSource]="data.Data" cdkDropList cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="drop($event)">
+
+            <ng-container *ngFor="let head of data.Schema;let i = index;" matColumnDef="{{head}}">
+                <th mat-header-cell *matHeaderCellDef> {{head}}
+                    <mat-icon (click)="rmCol(i)" style="cursor: pointer;" matTooltip="刪除欄位"> delete </mat-icon>
+                </th>
+                <td mat-cell *matCellDef="let element"> <input type="text" [(ngModel)]="element[head]"> </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="data.Schema"></tr>
+            <tr mat-row *matRowDef="let row; columns: data.Schema;"></tr>
+        </table>
+    </div>
+
+    <div *ngIf="data.DataType == 1 || data.DataType == 2">
+        <!-- json -->
+        <input type="file" (change)="onFileChange($event)" accept=".json" />
+        {{ jsonText }}
+    </div>
+
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button (click)="onYesClick()" cdkFocusInitial>Ok</button>
+</div>
