@@ -28,13 +28,19 @@ namespace GraphDesigner.Helpers {
             return query;
         }
 
+        /// <summary>
+        /// {table1:[{a:1,b:2},{.}],table2:[]}
+        /// </summary>
+        /// <param name="data">{table1:[{a:1,b:2},{.}],table2:[]}</param>
+        /// <param name="lines">{FromTableName,ToTableName,FromColName,ToColName}</param>
+        /// <returns></returns>
         public LogicLayerResponse MultiJoin (Dictionary<string, List<Dictionary<string, object>>> data, JoinLine[] lines) {
             var result = new LogicLayerResponse ();
             try {
                 var currentData = new List<string> ();
                 var tmp = "";
                 for (var i = 0; i < lines.Length; i++) {
-                    var fromTable = lines[i].FromeTableName;
+                    var fromTable = lines[i].FromTableName;
                     var toTable = lines[i].ToTableName;
                     var fromCol = lines[i].FromColName;
                     var toCol = lines[i].ToColName;
@@ -125,7 +131,7 @@ namespace GraphDesigner.Helpers {
         public List<dynamic> Data {get;set;}
     }
     public class JoinLine{
-        public string FromeTableName {get;set;}
+        public string FromTableName {get;set;}
         public string ToTableName {get;set;}
         public string FromColName {get;set;}
         public string ToColName {get;set;}

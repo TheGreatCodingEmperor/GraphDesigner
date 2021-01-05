@@ -8,11 +8,14 @@ import { Observable } from 'rxjs';
 export class JoinDesignerService {
 
   constructor(private http: HttpClient) { }
-  GetJoinDataSetSchemas(Id:number|string): Observable<any> {
-    return this.http.get(`${this.baseUrl()}/UI/JoinDesigner/GetJoinDataSetSchemas/${Id}`);
+  GetJoinDesignDragOptions(Id:number|string): Observable<any> {
+    return this.http.get(`${this.baseUrl()}/UI/JoinDesigner/GetJoinDesignDragOptions/${Id}`);
   }
   GetLayerMaintableSelectOptions(Id:number|string): Observable<any> {
     return this.http.get(`${this.baseUrl()}/UI/JoinDesigner/LayerMaintableSelectOptions/${Id}`);
+  }
+  GetJoinDesignLayers(ProjectId:number|string): Observable<any> {
+    return this.http.get(`${this.baseUrl()}/UI/JoinDesigner/GetJoinDesignLayers/${ProjectId}`);
   }
 
   public baseUrl() {

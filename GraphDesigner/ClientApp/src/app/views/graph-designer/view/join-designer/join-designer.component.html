@@ -14,70 +14,58 @@
         <button mat-button (click)="addLayer()">Add Layer</button>
 
         <!-- layer 屬性 -->
-        <mat-tab-group animationDuration="0ms">
-            <mat-tab label="New Layer">
+        <mat-tab-group animationDuration="0ms" (selectedTabChange)="tabChange($event)">
+            <mat-tab *ngFor="let layer of layers" label="{{layer.Layer.LayerName}}" >
                 <div style="display: flex;">
                     <p>
                         <!-- Layer 名稱 -->
                         <mat-form-field appearance="legacy">
                             <mat-label>Layer Name</mat-label>
-                            <input [(ngModel)]="LayerName" matInput type="text" placeholder="Name">
+                            <input [(ngModel)]="layer.Layer.LayerName" matInput type="text" placeholder="Name">
                         </mat-form-field>
                     </p>
                     <p>
                         <!-- MainTable topo/table -->
                         <mat-form-field appearance="legacy">
                             <mat-label>Main Table</mat-label>
-                            <mat-select [(ngModel)]="MainTableId" required>
-                                <mat-option *ngFor="let item of layerTableOptions" [value]="item.TableId">{{item.TableName}}
+                            <mat-select [(ngModel)]="layer.Layer.MainTableId" (selectionChange)="onMainTableChange($event)" required>
+                                <mat-option *ngFor="let item of mainTableOptions" [value]="item.TableId">{{item.TableName}}
                                 </mat-option>
                             </mat-select>
                         </mat-form-field>
                     </p>
-                    <p>
+                    <p *ngIf="dataType == 1">
                         <!-- topo => objects -->
                         <mat-form-field appearance="legacy">
                             <mat-label>Objects</mat-label>
-                            <mat-select [(ngModel)]="MainTableId" required>
-                                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}
+                            <mat-select [(ngModel)]="layer.Layer.ObjectType" (selectionChange)="objectChange($event)" required>
+                                <mat-option *ngFor="let item of objectOptions" [value]="item">{{item}}
                                 </mat-option>
                             </mat-select>
                         </mat-form-field>
                     </p>
-                    <p>
-                        <!-- pk table=>schema topo=>properties -->
-                        <mat-form-field appearance="legacy">
-                            <mat-label>Primary Key</mat-label>
-                            <mat-select [(ngModel)]="MainTableId" required>
-                                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}
-                                </mat-option>
-                            </mat-select>
-                        </mat-form-field>
-                    </p>
-                    <p>
+                    <p *ngIf="dataType == 0">
                         <!-- long table=>schema-->
                         <mat-form-field appearance="legacy">
                             <mat-label>Longitude</mat-label>
-                            <mat-select [(ngModel)]="MainTableId" required>
-                                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}
+                            <mat-select [(ngModel)]="layer.Layer.LongitudeColName" required>
+                                <mat-option *ngFor="let item of schemaOptions" [value]="item">{{item}}
                                 </mat-option>
                             </mat-select>
                         </mat-form-field>
                     </p>
-                    <p>
+                    <p *ngIf="dataType == 0">
                         <!-- lat table=>schema -->
                         <mat-form-field appearance="legacy">
                             <mat-label>Latitude</mat-label>
-                            <mat-select [(ngModel)]="MainTableId" required>
-                                <mat-option *ngFor="let item of topoList" [value]="item.value">{{item.label}}
+                            <mat-select [(ngModel)]="layer.Layer.LatitudeColName" required>
+                                <mat-option *ngFor="let item of schemaOptions" [value]="item">{{item}}
                                 </mat-option>
                             </mat-select>
                         </mat-form-field>
                     </p>
                 </div>
             </mat-tab>
-            <mat-tab label="Second">Content 2</mat-tab>
-            <mat-tab label="Third">Content 3</mat-tab>
         </mat-tab-group>
 
 
@@ -89,6 +77,7 @@
 
 
         <button mat-button (click)="getDatas()">Get Datas</button>
+        <button mat-button (click)="saveLinesAndTables()">save</button>
         <button mat-button (click)="remove()">Remove</button>
         <button mat-button (click)="joinResult()">JoinResult</button>
         <!-- 右側可拖曳資料集選項 隱藏/顯示按鈕 -->

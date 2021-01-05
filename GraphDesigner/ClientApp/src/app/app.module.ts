@@ -13,6 +13,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from './modules/shared-module';
 import { GraphDesignerModule } from './views/graph-designer/graph-designer.module';
 import { ProgressSpinnerComponent } from './components/progress-spinner/progress-spinner.component';
+// import { NgxWebstorageModule } from 'ngx-webstorage';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { ProgressSpinnerComponent } from './components/progress-spinner/progress
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
+    // NgxWebstorageModule.forRoot(),
     HttpClientModule,
     FormsModule,
     SharedModule,

@@ -53,7 +53,7 @@ namespace GraphDesigner.Controllers {
             var lines = new List<JoinLine>();
             foreach(var line in body.Lines){
                 var tmp = new JoinLine();
-                tmp.FromeTableName = query.Where(x => x.ProjectData.ProjectDataId == line.FromTableId).SingleOrDefault()?.DataSet.DataSetName;
+                tmp.FromTableName = query.Where(x => x.ProjectData.ProjectDataId == line.FromTableId).SingleOrDefault()?.DataSet.DataSetName;
                 tmp.ToTableName = query.Where(x => x.ProjectData.ProjectDataId == line.ToTableId).SingleOrDefault()?.DataSet.DataSetName;
                 lines.Add(tmp);
             }

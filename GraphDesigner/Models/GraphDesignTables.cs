@@ -34,11 +34,12 @@ namespace GraphDesigner.Models {
         public string LayerName {get;set;}
         public int ProjectId { get; set; }
         public int MainTableId { get; set; }
+        public string ObjectType {get;set;}
         public string PkColName {get;set;}
         public string LongitudeColName {get;set;} 
         public string LatitudeColName {get;set;}
         public string JoinPkName {get;set;}
-        public int JoinPkTableId {get;set;}
+        public int? JoinPkTableId {get;set;}
     }
     public class JoinLines {
         [Key]

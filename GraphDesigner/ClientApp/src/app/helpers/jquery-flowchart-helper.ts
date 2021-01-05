@@ -9,7 +9,7 @@ export interface IJqueryFlowchartHelper {
     GetSelectedOperatorId(element: any): any;
     /** @summary 取得 當前 jquery flowchart 設計結果 */
     GetDatas(element: any): any;
-    SetDatas(): any;
+    SetDatas(element:any,data:any): any;
 }
 @Injectable({
     providedIn: 'root'
@@ -54,7 +54,9 @@ export class JqueryFlochartHelper implements IJqueryFlowchartHelper {
     GetDatas(element: any) {
         return element.flowchart('getData');
     }
-    SetDatas() {
-        throw new Error("Method not implemented.");
+    SetDatas(element,data:any) {
+        console.log(data);
+        if(data)
+        element.flowchart('setData',data);
     }
 }
