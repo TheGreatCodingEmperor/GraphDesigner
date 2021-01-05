@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { IProjectEditDB } from '../models/project-editor';
+import { IProjectEditAPI } from '../models/project-editor';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class ProjectEditorService {
     return this.http.get(`${this.baseUrl()}/UI/ProjectEditor/GetDataSetEdit/${Id}`);
   }
 
-  SaveProjectEdit(body:{project:IProjectEditDB,projectDataIds:number[]}): Observable<any> {
+  SaveProjectEdit(body:{project:IProjectEditAPI,projectDataIds:number[]}): Observable<any> {
     return this.http.patch(`${this.baseUrl()}/UI/ProjectEditor/SaveProjectEdit`,body);
   }
   

@@ -30,6 +30,7 @@ export class DatasetEditorComponent implements OnInit {
     }
   }
 
+  /** @summary 匯入檔案 */
   onFileChange(ev) {
     switch (this.data.DataType) {
       case 0: {
@@ -47,6 +48,7 @@ export class DatasetEditorComponent implements OnInit {
     }
   }
 
+  /** @summary 讀取匯入 excel */
   openExcel(ev) {
     let workBook = null;
     let jsonData = null;
@@ -68,6 +70,7 @@ export class DatasetEditorComponent implements OnInit {
     reader.readAsBinaryString(file);
   }
 
+  /** @summary 讀取匯入 json */
   openTopoJson(ev) {
     const reader = new FileReader();
     const file = ev.target.files[0];
@@ -88,14 +91,17 @@ export class DatasetEditorComponent implements OnInit {
     reader.readAsBinaryString(file);
   }
 
+  /** @summary excel 選擇資料表 */
   handleChange(event) {
     this.data.Schema = Object.keys(this.data.Data[0]);
   }
 
+  /** @summary 取消 */
   onNoClick(): void {
     this.dialogRef.close();
   }
 
+  /** @summary 確定 */
   onYesClick(): void {
     let datasetEditDb: IDataSetEditDB = new DataSetEditDB;
     let schema = null;

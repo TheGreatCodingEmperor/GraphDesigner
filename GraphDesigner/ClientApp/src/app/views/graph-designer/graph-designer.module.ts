@@ -9,6 +9,7 @@ import { JoinDesignerComponent } from './view/join-designer/join-designer.compon
 import { ProjectEditorComponent } from './components/dialog/project-editor/project-editor.component';
 import { DatasetEditorComponent } from './components/dialog/dataset-editor/dataset-editor.component';
 import { MapDesignerComponent } from './view/map-designer/map-designer.component';
+import { JoinResultComponent } from './components/dialog/join-result/join-result.component';
 
 
 @NgModule({
@@ -17,7 +18,9 @@ import { MapDesignerComponent } from './view/map-designer/map-designer.component
     DatasetManagerComponent, 
     JoinDesignerComponent, 
     ProjectEditorComponent, 
-    DatasetEditorComponent, MapDesignerComponent
+    DatasetEditorComponent, 
+    MapDesignerComponent, 
+    JoinResultComponent
   ],
   imports: [
     CommonModule,
@@ -26,7 +29,8 @@ import { MapDesignerComponent } from './view/map-designer/map-designer.component
   ],
   entryComponents:[
     ProjectEditorComponent,
-    DatasetEditorComponent
+    DatasetEditorComponent,
+    JoinResultComponent
   ]
 })
 export class GraphDesignerModule { }

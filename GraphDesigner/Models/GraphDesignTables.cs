@@ -19,7 +19,6 @@ namespace GraphDesigner.Models {
         public string Roles { get; set; }
         public string OrganizationId { get; set; }
         public int ProjectType { get; set; }
-        public int MainTableId {get;set;}
         public string Design { get; set; }
     }
     public class ProjectDatas {
@@ -27,6 +26,7 @@ namespace GraphDesigner.Models {
         public int ProjectDataId { get; set; }
         public int ProjectId { get; set; }
         public int DataSetId { get; set; }
+        public bool? IsProjectMainTable {get;set;}
     }
     public class Layer {
         [Key]
@@ -37,6 +37,8 @@ namespace GraphDesigner.Models {
         public string PkColName {get;set;}
         public string LongitudeColName {get;set;} 
         public string LatitudeColName {get;set;}
+        public string JoinPkName {get;set;}
+        public int JoinPkTableId {get;set;}
     }
     public class JoinLines {
         [Key]

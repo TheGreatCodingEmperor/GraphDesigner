@@ -1,7 +1,8 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { MatSnackBar } from '@angular/material';
-import { ActivatedRoute } from '@angular/router';
+import { MatDialog, MatSnackBar } from '@angular/material';
+import { ActivatedRoute, Router } from '@angular/router';
 import { JqueryFlochartHelper } from 'src/app/helpers/jquery-flowchart-helper';
+import { JoinResultComponent } from '../../components/dialog/join-result/join-result.component';
 import { IJoinTableSelectOption, ILayerMainTableOptions } from '../../models/join-designer';
 import { JoinDesignerService } from '../../services/join-designer.service';
 declare var $: any;
@@ -29,6 +30,8 @@ export class JoinDesignerComponent implements AfterViewInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
+    public dialog: MatDialog,
     private joinDesignerService: JoinDesignerService,
     private jqueryFlowchartHelper: JqueryFlochartHelper,
     private _snackBar: MatSnackBar
@@ -93,8 +96,26 @@ export class JoinDesignerComponent implements AfterViewInit {
     });
   }
 
+   /** 開啟 projectEditor 彈跳視窗 */
+   openDialog(data?:any) {
+    const dialogRef = this.dialog.open(JoinResultComponent, {
+      width: '50vw',
+      data: data
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+      if (result) {
+      }
+    });
+  }
+
   addLayer(){
     
+  }
+
+  joinResult(){
+    this.openDialog('hello');
   }
 
   //#region  封裝

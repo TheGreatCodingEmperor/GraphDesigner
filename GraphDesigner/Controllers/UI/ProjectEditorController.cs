@@ -20,63 +20,93 @@ namespace GraphDesigner.Controllers {
         }
 
         [HttpGet ("GetDataSetEdit/{Id}")]
+        /// <summary>
+        /// 取得 UI 編輯 dataSetEdit
+        /// </summary>
+        /// <param name="Id">Project 編號</param>
+        /// <returns></returns>
         public async Task<IActionResult> GetDataSetEdit ([FromRoute] int Id) {
             try {
                 var project = _efCoreHelper.GetSingle<Project, int> (_context, Id);
                 if (project == null) {
                     return NotFound ();
                 }
-                var projectDatas = _efCoreHelper.GetList<ProjectDatas>(_context).Where(x => x.ProjectId == Id).Select(x => x.DataSetId).ToList();
+                var projectDatas = _efCoreHelper.GetList<ProjectDatas> (_context).Where (x => x.ProjectId == Id).ToList ();
+                var mainTableId = projectDatas.SingleOrDefault (x => x.IsProjectMainTable == true)?.DataSetId;
+                var projectDataIds = projectDatas.Where (x => x.IsProjectMainTable != true).Select (x => x.DataSetId).ToList ();
                 await Task.CompletedTask;
                 return Ok (JsonConvert.SerializeObject (new {
                     ProjectId = project.ProjectId,
-                    ProjectName = project.ProjectName,
-                    MainTableId = project.MainTableId,
-                    ProjectType = project.ProjectType,
-                    Design = project.Design,
-                    ProjectDataIds = projectDatas
+                        ProjectName = project.ProjectName,
+                        ProjectType = project.ProjectType,
+                        MainTableId = mainTableId,
+                        Design = project.Design,
+                        ProjectDataIds = projectDataIds
                 }, Formatting.Indented));
             } catch (Exception e) {
                 return BadRequest (new { Result = e.ToString () });
             }
         }
-        [HttpPatch("SaveProjectEdit")]
-        public async Task<IActionResult> SaveProjectEdit([FromBody] ProjectEditoSaveDto body){
-            try{
+
+        [HttpPatch ("SaveProjectEdit")]
+        public async Task<IActionResult> SaveProjectEdit ([FromBody] ProjectEditoSaveDto body) {
+            try {
+                var inputProject = JsonConvert.DeserializeObject<Project> (JsonConvert.SerializeObject (body.project));
                 //更新 Project
-                _efCoreHelper.PatchSingle<Project>(_context,body.project,false);
+                _efCoreHelper.PatchSingle<Project> (_context, inputProject, false);
 
                 //現有 project datas(n筆)
-                var currrentProjectDatas = _efCoreHelper.GetList<ProjectDatas>(_context).Where(x => x.ProjectId == body.project.ProjectId).ToList();
+                var currrentProjectDatas = _efCoreHelper.GetList<ProjectDatas> (_context).Where (x => x.ProjectId == body.project.ProjectId).ToList ();
+                
                 //input、current datasetId 相同
-                foreach(var tableId in body.projectDataIds){
-                    var exist = currrentProjectDatas.FirstOrDefault(x => x.DataSetId == tableId);
-                    if(exist!=null){
-                        body.projectDataIds = body.projectDataIds.Where(x => x!=tableId).ToArray();
-                        currrentProjectDatas = currrentProjectDatas.Where(x => x.DataSetId != tableId).ToList();
+                foreach (var tableId in body.projectDataIds) {
+                    var exist = currrentProjectDatas.FirstOrDefault (x => x.DataSetId == tableId);
+                    if (exist != null) {
+                        body.projectDataIds = body.projectDataIds.Where (x => x != tableId).ToArray ();
+                        currrentProjectDatas = currrentProjectDatas.Where (x => x.DataSetId != tableId).ToList ();
+                    }
+                }
+                //maintableId 不存在就新增
+                if (body.project.MainTableId != null) {
+                    var exist = currrentProjectDatas.FirstOrDefault (x => x.DataSetId == body.project.MainTableId);
+                    if (exist == null) {
+                        var insert = new ProjectDatas ();
+                        insert.ProjectId = body.project.ProjectId;
+                        insert.DataSetId = (int)body.project.MainTableId;
+                        insert.IsProjectMainTable = true;
+                        _efCoreHelper.PatchSingle<ProjectDatas> (_context, insert, true);
                     }
                 }
                 //current 有 input 沒有
-                foreach(var table in currrentProjectDatas){
-                    _efCoreHelper.RemoveSingle<ProjectDatas,int>(_context,table.DataSetId,true);
+                foreach (var table in currrentProjectDatas) {
+                    _efCoreHelper.RemoveSingle<ProjectDatas, int> (_context, table.DataSetId, true);
                 }
                 //input 有 current 沒有
-                foreach(var tableId in body.projectDataIds){
-                    var insert = new ProjectDatas();
+                foreach (var tableId in body.projectDataIds) {
+                    var insert = new ProjectDatas ();
                     insert.ProjectId = body.project.ProjectId;
                     insert.DataSetId = tableId;
-                    _efCoreHelper.PatchSingle<ProjectDatas>(_context,insert,true);
+                    insert.IsProjectMainTable = false;
+                    _efCoreHelper.PatchSingle<ProjectDatas> (_context, insert, true);
                 }
-                await _context.SaveChangesAsync();
-                return Ok(new { ProjectId = body.project.ProjectId});
-            }
-            catch(Exception e){
-                return BadRequest(new {Result = e.ToString()});
+                await _context.SaveChangesAsync ();
+                return Ok (new { ProjectId = body.project.ProjectId });
+            } catch (Exception e) {
+                return BadRequest (new { Result = e.ToString () });
             }
         }
     }
-    public class ProjectEditoSaveDto{
-        public Project project {get;set;}
-        public int[] projectDataIds {get;set;}
+    public class ProjectEditoSaveDto {
+        public ProjectEditAPIDto project { get; set; }
+        public int[] projectDataIds { get; set; }
+    }
+    public class ProjectEditAPIDto {
+        public int ProjectId { get; set; }
+        public string ProjectName { get; set; }
+        public int? MainTableId { get; set; }
+        public string Roles { get; set; }
+        public string OrganizationId { get; set; }
+        public int ProjectType { get; set; }
+        public string Design { get; set; }
     }
 }
