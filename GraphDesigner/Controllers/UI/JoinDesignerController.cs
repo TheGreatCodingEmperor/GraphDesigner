@@ -68,7 +68,7 @@ namespace GraphDesigner.Controllers {
 
             //層
             var layers = _efCoreHelper.GetList<Layer> (_context).Where (x => x.ProjectId == ProjectId).ToList ();
-            
+
             //資料集
             var datasets = _efCoreHelper.GetList<DataSet> (_context).Where (x => x.DataType == 0);
             //project、資料集關係
@@ -85,18 +85,20 @@ namespace GraphDesigner.Controllers {
             join dataSet in datasets
             on projectData.DataSetId equals dataSet.DataSetId
             select new {
-                ProjectDataId = projectData.ProjectDataId,
+                TableId = projectData.ProjectDataId,
                 Name = dataSet.DataSetName,
                 Schema = dataSet.Schema,
-                LayerId = projectTable.LayerId
+                LayerId = projectTable.LayerId,
+                Left = projectTable.Left,
+                Top = projectTable.Top
             };
 
             // project line join ui line 欄位
             var uiLines = new List<dynamic> ();
             foreach (var line in projectLines) {
                 var tmp = new {
-                    FromTableName = uiTables.SingleOrDefault (x => x.ProjectDataId == line.FromTableId).Name,
-                    ToTableName = uiTables.SingleOrDefault (x => x.ProjectDataId == line.ToTableId).Name,
+                    FromTableId = line.FromTableId,
+                    ToTableId = line.ToTableId,
                     FromColName = line.FromColName,
                     ToColName = line.ToColName,
                     LayerId = line.LayerId
@@ -107,15 +109,17 @@ namespace GraphDesigner.Controllers {
             var queryList = new List<dynamic> ();
             foreach (var layer in layers) {
 
-                var tmptables = uiTables.Where (x => x.LayerId == layer.LayerId).ToList();
-                var tables = new List<dynamic>();
-                foreach(var table in tmptables){
-                    var schema = table.Schema.Split(',');
-                    tables.Add(new {
-                        ProjectDataId = table.ProjectDataId,
+                var tmptables = uiTables.Where (x => x.LayerId == layer.LayerId).ToList ();
+                var tables = new List<dynamic> ();
+                foreach (var table in tmptables) {
+                    var schema = table.Schema.Split (',');
+                    tables.Add (new {
+                        TableId = table.TableId,
                         Name = table.Name,
                         Schema = schema,
-                        LayerId = table.LayerId
+                        LayerId = table.LayerId,
+                        Top = table.Top,
+                        Left = table.Left
                     });
                 }
 
@@ -201,28 +205,88 @@ namespace GraphDesigner.Controllers {
             }
         }
 
-        [HttpPatch("SaveJoinDesign/{ProjectId}")]
-        public async Task<IActionResult>  SaveJoinDesign([FromRoute] int ProjectId,[FromBody] SaveLayerDto[] body){
-            // foreach(var layer in body){
-            //     layer.layer.ProjectId = ProjectId;
-            //     _efCoreHelper.PatchSingle<Layer>(_context,layer.layer,false);
+        [HttpPatch ("SaveJoinDesign/{ProjectId}")]
+        public async Task<IActionResult> SaveJoinDesign ([FromRoute] int ProjectId, [FromBody] SaveLayerDto[] body) {
+            var projectJoinTables = _efCoreHelper.GetList<JoinTables> (_context).Where (x => x.ProjectId == ProjectId).ToList ();
+            var projectJoinLines = _efCoreHelper.GetList<JoinLines> (_context).Where (x => x.ProjectId == ProjectId).ToList ();
+            foreach (var layer in body) {
+                layer.layer.ProjectId = ProjectId;
+                _efCoreHelper.PatchSingle<Layer> (_context, layer.layer, false);
 
-            //     foreach(var table in layer.Tables){
-            //         table.ProjectId = 
-            //         _efCoreHelper.PatchSingle<JoinTables>
-            //     }
-            // }
-            return Ok(JsonConvert.SerializeObject(body,Formatting.Indented));
+                var currentLayerJoinTables = projectJoinTables.Where (x => x.LayerId == layer.layer.LayerId).ToList ();
+                var currentLayerJoinLines = projectJoinLines.Where (x => x.LayerId == layer.layer.LayerId).ToList ();
+
+                for (var i = 0; i < currentLayerJoinLines.Count (); i++) {
+                    var tmp = currentLayerJoinLines[i];
+                    if (layer.Lines.Length > i) {
+                        //line: input 覆蓋 current
+                        tmp.FromTableId = layer.Lines[i].FromTableId;
+                        tmp.ToTableId = layer.Lines[i].ToTableId;
+                        tmp.FromColName = layer.Lines[i].FromColName;
+                        tmp.ToColName = layer.Lines[i].ToColName;
+                        _efCoreHelper.PatchSingle<JoinLines> (_context, tmp, true);
+                    } else {
+                        //line: current 刪除
+                        _efCoreHelper.RemoveSingle<JoinLines, int> (_context, tmp.JoinLineId, true);
+                    }
+                }
+                //line: input 新增
+                if (layer.Lines.Length > currentLayerJoinLines.Count ()) {
+                    for (var i = currentLayerJoinLines.Count (); i < layer.Lines.Length; i++) {
+                        var tmp = new JoinLines () {
+                            ProjectId = ProjectId,
+                            LayerId = layer.layer.LayerId,
+                            FromTableId = layer.Lines[i].FromTableId,
+                            ToTableId = layer.Lines[i].ToTableId,
+                            FromColName = layer.Lines[i].FromColName,
+                            ToColName = layer.Lines[i].ToColName
+                        };
+                        _efCoreHelper.PatchSingle<JoinLines> (_context, tmp, true);
+                    }
+                }
+
+                //table: current 有 input 有
+                foreach (var table in layer.Tables) {
+                    var exist = currentLayerJoinTables.FirstOrDefault (x => x.ProjectDataId == table.TableId);
+                    if (exist != null) {
+                        currentLayerJoinTables = currentLayerJoinTables.Where (x => x.ProjectDataId != table.TableId).ToList ();
+                        layer.Tables = layer.Tables.Where (x => x.TableId != table.TableId).ToArray ();
+                        exist.Top = table.Top;
+                        exist.Left = table.Left;
+                        _efCoreHelper.PatchSingle<JoinTables> (_context, exist, true);
+                    }
+                }
+
+                //table: current 沒有 input 有
+                foreach (var table in layer.Tables) {
+                    var tmp = new JoinTables () {
+                        ProjectId = ProjectId,
+                        ProjectDataId = table.TableId,
+                        LayerId = layer.layer.LayerId,
+                        Top = table.Top,
+                        Left = table.Left
+                    };
+                    _efCoreHelper.PatchSingle<JoinTables> (_context, tmp, true);
+                }
+
+                //table: current 有 input 沒有
+                foreach (var item in currentLayerJoinTables) {
+                    _efCoreHelper.RemoveSingle<JoinTables, int> (_context, item.JoinTableId, true);
+                }
+                await _context.SaveChangesAsync ();
+            }
+            await Task.CompletedTask;
+            return Ok (JsonConvert.SerializeObject (body, Formatting.Indented));
         }
     }
-    public class SaveLayerDto{
-        public Layer layer{get;set;}
-        public UITableDto[] Tables {get;set;}
-        public JoinLines[] Lines {get;set;}
+    public class SaveLayerDto {
+        public Layer layer { get; set; }
+        public UITableDto[] Tables { get; set; }
+        public JoinLines[] Lines { get; set; }
     }
-    public class UITableDto{
-        public int TableId {get;set;}
-        public int Left {get;set;}
-        public int Top {get;set;}
+    public class UITableDto {
+        public int TableId { get; set; }
+        public int Left { get; set; }
+        public int Top { get; set; }
     }
 }

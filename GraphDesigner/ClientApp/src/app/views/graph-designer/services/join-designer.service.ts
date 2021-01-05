@@ -17,6 +17,9 @@ export class JoinDesignerService {
   GetJoinDesignLayers(ProjectId:number|string): Observable<any> {
     return this.http.get(`${this.baseUrl()}/UI/JoinDesigner/GetJoinDesignLayers/${ProjectId}`);
   }
+  SaveJoinDesign(ProjectId:number|string, body:any): Observable<any> {
+    return this.http.patch(`${this.baseUrl()}/UI/JoinDesigner/SaveJoinDesign/${ProjectId}`,body);
+  }
 
   public baseUrl() {
     let base = '';

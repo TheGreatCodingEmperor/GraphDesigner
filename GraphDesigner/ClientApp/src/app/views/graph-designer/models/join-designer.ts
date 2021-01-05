@@ -49,19 +49,21 @@ export class Layer implements ILayer{
     LatitudeColName: string = null;
     JoinPkName: string = null;
     JoinPkTableId: number = null;
-    Design: string = null;
+    Design: any = null;
 }
 
 export class JoinDesignTable{
-    ProjectDataId:number = 0;
+    TableId:number = 0;
     Name:string = '';
-    Schma:string[] = [];
+    Schema:string[] = [];
     LayerId:number = 0;
+    Top:number =0;
+    Left:number = 0;
 }
 
 export class JoinDesignLine{
-    FromTableName:string = '';
-    ToTableName:string ='';
+    FromTableId:number = 0;
+    ToTableId:number = 0;
     FromColName:string ='';
     ToColName:string = '';
     LayerId:number = 0;

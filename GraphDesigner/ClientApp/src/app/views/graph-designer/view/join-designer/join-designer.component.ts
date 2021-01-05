@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angula
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProgressSpinnerComponent } from 'src/app/components/progress-spinner/progress-spinner.component';
+import { JoinDesignHelper } from 'src/app/helpers/join-design-helper';
 import { JqueryFlochartHelper } from 'src/app/helpers/jquery-flowchart-helper';
 import { JoinResultComponent } from '../../components/dialog/join-result/join-result.component';
 import { IJoinDesignLayer, IJoinTableSelectOption, ILayerMainTableOptions, JoinDesignLayer, JoinDesignLine, JoinDesignTable, Layer } from '../../models/join-designer';
@@ -55,6 +56,7 @@ export class JoinDesignerComponent implements AfterViewInit {
     public dialog: MatDialog,
     private joinDesignerService: JoinDesignerService,
     private jqueryFlowchartHelper: JqueryFlochartHelper,
+    private joinDesignHelper: JoinDesignHelper,
     private _snackBar: MatSnackBar
   ) {
   }
@@ -80,6 +82,10 @@ export class JoinDesignerComponent implements AfterViewInit {
     this.joinDesignerService.GetJoinDesignLayers(this.projectId).subscribe((res: IJoinDesignLayer[]) => {
       dialogRef.close();
       this.layers = res;
+      for(let layer of this.layers){
+        layer.Layer.Design = this.joinDesignHelper.ConvertAPIClass2FlowChart(layer.Lines,layer.Tables);
+      }
+      console.log(this.layers)
     }, error => {
       this.openSnackBar(error.message);
     });
@@ -208,29 +214,23 @@ export class JoinDesignerComponent implements AfterViewInit {
   }
 
   saveLinesAndTables() {
-    let datas = this.jqueryFlowchartHelper.GetDatas($(this.exampleDiv.nativeElement));
-    // console.log(datas)
-    let lines: any[] = [];
-    let tables: { tableId: number, top: number, left: number }[] = [];
-    let linksIds = Object.keys(datas.links);
-    for (let line of linksIds) {
-      let tmp: any = {};
-      // tmp.MapId = this.mapId;
-      tmp.fromTableId = Number(datas.links[line as string].fromOperator);
-      tmp.fromColName = datas.links[line as string].fromConnector.split('_')[0];
-      tmp.toTableId = Number(datas.links[line as string].toOperator);
-      tmp.toColName = datas.links[line as string].toConnector.split('_')[0];
-      lines.push(tmp);
+    this.layer.Layer.Design = this.getDatas();
+    // let datas = this.jqueryFlowchartHelper.GetDatas($(this.exampleDiv.nativeElement));
+    // this.joinDesignHelper.ConvertFlowChart2APIClass(datas);
+    let result = [];
+    for (let layer of this.layers) {
+      let data = this.joinDesignHelper.ConvertFlowChart2APIClass(layer.Layer.Design);
+      let tmp = {};
+      tmp['layer'] = layer.Layer;
+      delete tmp['layer'].Design;
+      tmp['tables'] = data.tables;
+      tmp['lines'] = data.lines;
+      result.push(tmp);
     }
-    let operatorIds = Object(datas.operators);
-    for (let table in operatorIds) {
-      tables.push({
-        tableId: Number(table),
-        left: datas.operators[table as string].left,
-        top: datas.operators[table as string].top
-      })
-    }
-    console.log({ lines: lines, tables: tables })
+    console.log(result);
+    this.joinDesignerService.SaveJoinDesign(this.projectId, result).subscribe(res => {
+      this.openSnackBar("Save Seccessful!");
+    }, error => { this.openSnackBar(error.message) });
   }
 
   openSnackBar(message: string) {
@@ -254,7 +254,9 @@ export class JoinDesignerComponent implements AfterViewInit {
   }
 
   addLayer() {
-    this.layers.push(new JoinDesignLayer);
+    let tmp = new JoinDesignLayer;
+    tmp.Layer.ProjectId = this.projectId;
+    this.layers.push(tmp);
   }
 
   joinResult() {
@@ -288,7 +290,7 @@ export class JoinDesignerComponent implements AfterViewInit {
 
     setTimeout(() => {
       $(this.exampleDiv.nativeElement).flowchart({
-        data: '',
+        data: this.layer.Layer.Design,
         multipleLinksOnOutput: false,
       });
       $(".flowchart-links-layer").on("dragover", (e) => this.dragover(e));
