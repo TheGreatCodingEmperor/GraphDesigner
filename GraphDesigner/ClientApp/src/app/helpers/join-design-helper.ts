@@ -26,7 +26,7 @@ export class JoinDesignHelper {
                 top: datas.operators[table as string].top
             })
         }
-        console.log({ lines: lines, tables: tables })
+        // console.log({ lines: lines, tables: tables })
         return { lines: lines, tables: tables };
     }
     ConvertAPIClass2FlowChart(lines:JoinDesignLine[], joinTables:JoinDesignTable[]){
@@ -44,7 +44,7 @@ export class JoinDesignHelper {
     for (let table of joinTables) {
         var inputs = {};
         var outputs = {};
-        console.log(table.Schema);
+        // console.log(table.Schema);
         for (let col of table.Schema) {
             inputs[`${col}_in`] = {};
             inputs[`${col}_in`]["label"] = col;
@@ -62,7 +62,7 @@ export class JoinDesignHelper {
             }
         };
     }
-    console.log({ links: links, operatorTypes: {}, operators: tables });
+    // console.log({ links: links, operatorTypes: {}, operators: tables });
     return { links: links, operatorTypes: {}, operators: tables };
 }
 }

@@ -18,6 +18,10 @@ export class ProjectManagerService {
   GetDatasetList():Observable<any>{
     return this.http.get(`${this.baseUrl()}/UI/ProjectManager/DatasetList`);
   }
+
+  RemoveProject(projectId:number): Observable<any> {
+    return this.http.delete(`${this.baseUrl()}/UI/ProjectManager/RemoveProject/${projectId}`);
+  }
   
   public baseUrl() {
     let base = '';

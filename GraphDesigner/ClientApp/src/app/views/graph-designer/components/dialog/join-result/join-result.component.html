@@ -1,1 +1,33 @@
-<p>join-result works!</p>
+<div mat-dialog-content>
+    <table>
+        <!-- table headers -->
+        <tr>
+            <th *ngFor="let table of tables" [attr.colspan]="table.cols.length">{{table.name}}</th>
+        </tr>
+        <!-- col headers -->
+        <tr>
+            <ng-container *ngFor="let table of tables">
+                <th *ngFor="let col of table.cols" [style.backgroundColor]="isForeignKey(table.id,col)?'red':''">
+                    <!-- {{col}} -->
+                    <div class="mainColLabel" *ngIf="isForeignKey(table.id,col)">{{data.PkColName}}</div>
+                    <button class="col" mat-button [matMenuTriggerFor]="menu">{{col}}</button>
+                    <mat-menu #menu="matMenu">
+                        <button class="colOptions" *ngFor="let mainCol of data.schemaOptions" mat-menu-item
+                            (click)="foreighKey(table,col,mainCol)">{{mainCol}}</button>
+                    </mat-menu>
+                </th>
+            </ng-container>
+        </tr>
+
+        <!-- datas -->
+        <tr *ngFor="let row of data.Data">
+            <ng-container *ngFor="let table of tables">
+                <td *ngFor="let col of table.cols">{{row[table.name][col]}}</td>
+            </ng-container>
+        </tr>
+    </table>
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button (click)="onYesClick()" cdkFocusInitial>Ok</button>
+</div>

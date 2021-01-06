@@ -37,5 +37,16 @@ namespace GraphDesigner.Controllers {
                 return BadRequest (new { Result = e.ToString () });
             }
         }
+
+        [HttpDelete("RemoveDataSet/{ProjectId}")]
+        public async Task<IActionResult> RemoveDataSet([FromRoute] int ProjectId){
+            try{
+                _efCoreHelper.RemoveSingle<DataSet,int>(_context,ProjectId,false);
+                await Task.CompletedTask;
+                return Ok();
+            }catch(Exception e){
+                return BadRequest (new { Result = e.ToString () });
+            }
+        }
     }
 }

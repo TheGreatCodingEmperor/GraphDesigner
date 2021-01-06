@@ -12,6 +12,10 @@ export class DatasetManagerService {
     return this.http.get(`${this.baseUrl()}/UI/DataSetManger/DataSetMangerList`);
   }
 
+  RemoveDataSet(projectId:number): Observable<any> {
+    return this.http.delete(`${this.baseUrl()}/UI/DataSetManger/RemoveDataSet/${projectId}`);
+  }
+
   public baseUrl() {
     let base = '';
 

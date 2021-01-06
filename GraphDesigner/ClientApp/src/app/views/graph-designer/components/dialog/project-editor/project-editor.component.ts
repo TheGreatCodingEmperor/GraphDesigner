@@ -64,6 +64,7 @@ export class ProjectEditorComponent implements OnInit {
         console.log(res);
         this.data.project.ProjectId = res.projectId;
         this.openSnackBar("Save Successed!");
+        this.dialogRef.close("yes");
       },
       error=>{
         this.openSnackBar(error.message);

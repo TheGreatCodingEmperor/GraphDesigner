@@ -7,6 +7,7 @@ import { JqueryFlochartHelper } from 'src/app/helpers/jquery-flowchart-helper';
 import { JoinResultComponent } from '../../components/dialog/join-result/join-result.component';
 import { IJoinDesignLayer, IJoinTableSelectOption, ILayerMainTableOptions, JoinDesignLayer, JoinDesignLine, JoinDesignTable, Layer } from '../../models/join-designer';
 import { JoinDesignerService } from '../../services/join-designer.service';
+import { JoinResultService } from '../../services/join-result.service';
 declare var $: any;
 
 @Component({
@@ -29,8 +30,8 @@ export class JoinDesignerComponent implements AfterViewInit {
   /** @summary 正在 drap Table */
   table: IJoinTableSelectOption = null;
 
-  schemaOptions = [];
-  objectOptions = [];
+  schemaOptions:string[] = [];
+  objectOptions:string[] = [];
   dataType = 0;
 
   /** @summary 專案邊號 */
@@ -38,7 +39,7 @@ export class JoinDesignerComponent implements AfterViewInit {
 
   layers: IJoinDesignLayer[] = [];
   /** @summary 當前 layer */
-  layer: IJoinDesignLayer = null;
+  currentLayer: IJoinDesignLayer = null;
   lastLayer: IJoinDesignLayer = null;
   block = true;
 
@@ -55,6 +56,7 @@ export class JoinDesignerComponent implements AfterViewInit {
     private router: Router,
     public dialog: MatDialog,
     private joinDesignerService: JoinDesignerService,
+    private joinResultService: JoinResultService,
     private jqueryFlowchartHelper: JqueryFlochartHelper,
     private joinDesignHelper: JoinDesignHelper,
     private _snackBar: MatSnackBar
@@ -63,8 +65,6 @@ export class JoinDesignerComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.projectId = Number(this.route.snapshot.queryParamMap.get('ProjectId'));
-    //flow chart init
-    this.jqueryFlowchartInit();
     //join design drag options
     this.GetJoinDesignDragOptions();
     //get layer maintable options
@@ -73,7 +73,7 @@ export class JoinDesignerComponent implements AfterViewInit {
     this.GetJoinDesignLayers();
   }
 
-  /** @summary get layers */
+  /** @summary get layers、draw layer joinDesign */
   GetJoinDesignLayers() {
     const dialogRef = this.dialog.open(ProgressSpinnerComponent, {
       width: '150px',
@@ -82,9 +82,12 @@ export class JoinDesignerComponent implements AfterViewInit {
     this.joinDesignerService.GetJoinDesignLayers(this.projectId).subscribe((res: IJoinDesignLayer[]) => {
       dialogRef.close();
       this.layers = res;
-      for(let layer of this.layers){
-        layer.Layer.Design = this.joinDesignHelper.ConvertAPIClass2FlowChart(layer.Lines,layer.Tables);
+      for (let layer of this.layers) {
+        layer.Layer.Design = this.joinDesignHelper.ConvertAPIClass2FlowChart(layer.Lines, layer.Tables);
       }
+      this.currentLayer = res [0];
+      //flow chart init
+      this.jqueryFlowchartInit();
       console.log(this.layers)
     }, error => {
       this.openSnackBar(error.message);
@@ -119,8 +122,8 @@ export class JoinDesignerComponent implements AfterViewInit {
         this.schemaOptions = table.Schema as string[];
       }
       case 1: {
-        if (this.layer.Layer.ObjectType != null) {
-          this.schemaOptions = table.Schema[this.layer.Layer.ObjectType];
+        if (this.currentLayer.Layer.ObjectType != null) {
+          this.schemaOptions = table.Schema[this.currentLayer.Layer.ObjectType];
         }
         break;
       }
@@ -135,15 +138,15 @@ export class JoinDesignerComponent implements AfterViewInit {
     if (!table) return;
     switch (table.DataType) {
       case 0: {
-        this.layer.Layer.ObjectType = null;
+        this.currentLayer.Layer.ObjectType = null;
         this.schemaOptions = table.Schema as string[];
       }
       case 1: {
-        this.layer.Layer.LatitudeColName = null;
-        this.layer.Layer.LongitudeColName = null;
+        // this.currentLayer.Layer.LatitudeColName = null;
+        // this.currentLayer.Layer.LongitudeColName = null;
         this.objectOptions = Object.keys(table.Schema);
-        if (this.layer.Layer.ObjectType != null) {
-          this.schemaOptions = table.Schema[this.layer.Layer.ObjectType];
+        if (this.currentLayer.Layer.ObjectType != null) {
+          this.schemaOptions = table.Schema[this.currentLayer.Layer.ObjectType];
         }
         break;
       }
@@ -153,19 +156,24 @@ export class JoinDesignerComponent implements AfterViewInit {
 
   /** @summary Layer 改變 */
   tabChange(e) {
-    this.lastLayer = this.layer;
+    //儲存上一個 layer 到到暫存(layer.Design)
+    this.lastLayer = this.currentLayer;
     if (this.lastLayer) {
-      console.log('last layer')
-      console.log(this.lastLayer);
       this.lastLayer.Layer.Design = this.getDatas();
     }
-    this.layer = this.layers[e.index];
-    let table = this.mainTableOptions.find(x => x.TableId == this.layer.Layer.MainTableId);
+    //this.layer 紀錄當前 Layer 資訊
+    this.currentLayer = this.layers[e.index];
+    console.log(this.currentLayer);
+
+    //this layer mainTable type
+    let table = this.mainTableOptions.find(x => x.TableId == this.currentLayer.Layer.MainTableId);
     if (table) this.dataType = table.DataType;
+
+    //取得主表欄位選項/行政區階層
     this.getObjectOptions(table);
     if (!this.block) {
-      if (this.layer.Layer.Design)
-        this.jqueryFlowchartHelper.SetDatas($(this.exampleDiv.nativeElement), this.layer.Layer.Design);
+      if (this.currentLayer.Layer.Design)
+        this.jqueryFlowchartHelper.SetDatas($(this.exampleDiv.nativeElement), this.currentLayer.Layer.Design);
       else
         this.jqueryFlowchartHelper.SetDatas($(this.exampleDiv.nativeElement), {});
     }
@@ -173,14 +181,14 @@ export class JoinDesignerComponent implements AfterViewInit {
 
   /** @summary 行政區 層級改變 */
   objectChange(e) {
-    var table = this.mainTableOptions.find(x => x.TableId == this.layer.Layer.MainTableId);
+    var table = this.mainTableOptions.find(x => x.TableId == this.currentLayer.Layer.MainTableId);
     this.dataType = table.DataType;
     this.getSchemaOptions(table);
   }
 
   /** @summary Layer 主表改變 */
   onMainTableChange(e) {
-    var table = this.mainTableOptions.find(x => x.TableId == this.layer.Layer.MainTableId);
+    var table = this.mainTableOptions.find(x => x.TableId == this.currentLayer.Layer.MainTableId);
     this.dataType = table.DataType;
     this.getObjectOptions(table);
   }
@@ -202,19 +210,22 @@ export class JoinDesignerComponent implements AfterViewInit {
     this.jqueryFlowchartHelper.AddOperator($(this.exampleDiv.nativeElement), this.table.TableId, this.table.TableName, ev.offsetX, ev.offsetY, this.table.Schema);
   }
 
+  /** @summary 移除 UI Table 或 線條 */
   remove() {
     this.jqueryFlowchartHelper.Delete($(this.exampleDiv.nativeElement));
   }
 
+  /** @summary 除錯 UI Designe 結果 */
   getDatas() {
     let datas = this.jqueryFlowchartHelper.GetDatas($(this.exampleDiv.nativeElement));
-    this.layer.Layer.Design = datas;
+    this.currentLayer.Layer.Design = datas;
     console.log(this.layers);
     return datas;
   }
 
+  /** @summary 儲存 UI Design 結果 */
   saveLinesAndTables() {
-    this.layer.Layer.Design = this.getDatas();
+    this.currentLayer.Layer.Design = this.getDatas();
     // let datas = this.jqueryFlowchartHelper.GetDatas($(this.exampleDiv.nativeElement));
     // this.joinDesignHelper.ConvertFlowChart2APIClass(datas);
     let result = [];
@@ -230,9 +241,11 @@ export class JoinDesignerComponent implements AfterViewInit {
     console.log(result);
     this.joinDesignerService.SaveJoinDesign(this.projectId, result).subscribe(res => {
       this.openSnackBar("Save Seccessful!");
+      this.GetJoinDesignLayers();
     }, error => { this.openSnackBar(error.message) });
   }
 
+  /** @summary API 結果 彈掉視窗 */
   openSnackBar(message: string) {
     this._snackBar.open(message, null, {
       duration: 2000,
@@ -240,27 +253,48 @@ export class JoinDesignerComponent implements AfterViewInit {
   }
 
   /** 開啟 projectEditor 彈跳視窗 */
-  openDialog(data?: any) {
+  openDialog(data?: {Tables:object[],Data:any[]}) {
+    data['schemaOptions'] = this.schemaOptions;
+    data['JoinPkTableId'] = this.currentLayer.Layer.JoinPkTableId;
+    data['PkColName'] = this.currentLayer.Layer.PkColName;
+    data['JoinPkName'] = this.currentLayer.Layer.JoinPkName;
     const dialogRef = this.dialog.open(JoinResultComponent, {
-      width: '50vw',
+      width: '80vw',
+      height: '90vh',
       data: data
     });
 
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');
       if (result) {
+        this.currentLayer.Layer.PkColName = result.PkColName;
+        this.currentLayer.Layer.JoinPkName = result.JoinPkName;
+        this.currentLayer.Layer.JoinPkTableId = result.JoinPkTableId;
       }
     });
   }
 
+  /** @summary 新增一層圖 */
   addLayer() {
     let tmp = new JoinDesignLayer;
     tmp.Layer.ProjectId = this.projectId;
     this.layers.push(tmp);
   }
 
+  /** @summary 建立 join 結果與 main table 關係 */
   joinResult() {
-    this.openDialog('hello');
+    var datas = this.joinDesignHelper.ConvertFlowChart2APIClass(this.currentLayer.Layer.Design);
+    this.joinResultService.DataSetInnerJoin({ projectId: this.projectId, lines: datas.lines }).subscribe((res:{Tables:object[],Data:any[]}) => {
+      console.log(res);
+      this.openDialog(res);
+    }, error => {
+      this.openSnackBar("Join Successed!");
+    });
+  }
+
+  hasForeignKey(){
+    if(this.block)return true;
+    return this.currentLayer.Layer.JoinPkTableId&&this.currentLayer.Layer.JoinPkName&&this.currentLayer.Layer.PkColName;
   }
 
   //#region  封裝
@@ -288,15 +322,15 @@ export class JoinDesignerComponent implements AfterViewInit {
     });
 
 
-    setTimeout(() => {
-      $(this.exampleDiv.nativeElement).flowchart({
-        data: this.layer.Layer.Design,
-        multipleLinksOnOutput: false,
-      });
-      $(".flowchart-links-layer").on("dragover", (e) => this.dragover(e));
-      $(".flowchart-links-layer").on("drop", (e) => this.drop(e));
-      this.block = false;
-    }, 1000);
+    // setTimeout(() => {
+    $(this.exampleDiv.nativeElement).flowchart({
+      data: this.currentLayer.Layer.Design,
+      multipleLinksOnOutput: false,
+    });
+    $(".flowchart-links-layer").on("dragover", (e) => this.dragover(e));
+    $(".flowchart-links-layer").on("drop", (e) => this.drop(e));
+    this.block = false;
+    // }, 1000);
 
   }
   //#endregion 封裝

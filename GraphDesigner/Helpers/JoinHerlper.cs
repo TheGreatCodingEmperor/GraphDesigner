@@ -40,8 +40,8 @@ namespace GraphDesigner.Helpers {
                 var currentData = new List<string> ();
                 var tmp = "";
                 for (var i = 0; i < lines.Length; i++) {
-                    var fromTable = lines[i].FromTableName;
-                    var toTable = lines[i].ToTableName;
+                    var fromTable = lines[i].FromTableName.Replace(" ","_");
+                    var toTable = lines[i].ToTableName.Replace(" ","_");
                     var fromCol = lines[i].FromColName;
                     var toCol = lines[i].ToColName;
                     if (i == 0) {

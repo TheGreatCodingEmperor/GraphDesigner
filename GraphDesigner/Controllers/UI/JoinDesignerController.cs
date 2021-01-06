@@ -206,6 +206,12 @@ namespace GraphDesigner.Controllers {
         }
 
         [HttpPatch ("SaveJoinDesign/{ProjectId}")]
+        /// <summary>
+        /// 儲存 layers 、 lines 、 tables
+        /// </summary>
+        /// <param name="ProjectId"></param>
+        /// <param name="body"></param>
+        /// <returns></returns>
         public async Task<IActionResult> SaveJoinDesign ([FromRoute] int ProjectId, [FromBody] SaveLayerDto[] body) {
             var projectJoinTables = _efCoreHelper.GetList<JoinTables> (_context).Where (x => x.ProjectId == ProjectId).ToList ();
             var projectJoinLines = _efCoreHelper.GetList<JoinLines> (_context).Where (x => x.ProjectId == ProjectId).ToList ();

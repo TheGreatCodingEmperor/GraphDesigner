@@ -38,7 +38,7 @@ export class ProjectManagerComponent implements AfterViewInit {
   ngAfterViewInit() {
     this.GetProjectList();
     this.GetDataSetList();
-    this.dataSource.paginator = this.paginator;
+    // this.dataSource.paginator = this.paginator;
   }
 
   /** @summary 取得資料集 下拉清單 */
@@ -54,6 +54,7 @@ export class ProjectManagerComponent implements AfterViewInit {
   GetProjectList() {
     this.projectManagerService.GetProjectList().subscribe((res: ProjectManagerListItem[]) => {
       this.dataSource = new MatTableDataSource<IProjectManagerListItem>(res);
+      this.dataSource.paginator = this.paginator;
     })
   }
 
@@ -80,6 +81,16 @@ export class ProjectManagerComponent implements AfterViewInit {
     else {
       this.openDialog(new ProjectEditUI);
     }
+  }
+
+  removeProject(projectId:number){
+    this.projectManagerService.RemoveProject(projectId).subscribe(res=>{
+      this.openSnackBar("Delete Successful!");
+      this.GetProjectList();
+    },error=>{
+      this.openSnackBar(error.message);
+      this.GetProjectList();
+    });
   }
 
   /** 開啟 projectEditor 彈跳視窗 */

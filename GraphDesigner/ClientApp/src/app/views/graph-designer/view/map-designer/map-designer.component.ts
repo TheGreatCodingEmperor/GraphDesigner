@@ -69,7 +69,7 @@ export class MapDesignerComponent implements OnInit {
     this.projectId = Number(this.route.snapshot.queryParamMap.get("ProjectId"));
     this.mapDesignerService.GetMap(this.projectId).subscribe(res => {
       this.mainTopo = res;
-      // this.getSpicific("高雄市")
+      // this.getSpicific("台北市")
       this.tooltip = this.buildTooltip();
       let zoom = this.buildZoom();
       let svg = this.buildSvg(zoom);
@@ -255,7 +255,7 @@ export class MapDesignerComponent implements OnInit {
         this.g
           .selectAll("circle")
           .attr("transform", event.transform)
-          .attr("r", (5) / event.transform.k).attr("stroke-width", (0.5 * 1.5) / event.transform.k);
+          .attr("r", (3+event.transform.k) / event.transform.k).attr("stroke-width", (0.5 * 1.5) / event.transform.k);
       });
   }
 

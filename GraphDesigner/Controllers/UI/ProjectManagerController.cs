@@ -38,6 +38,18 @@ namespace GraphDesigner.Controllers {
             }
         }
 
+        [HttpDelete("RemoveProject/{ProjectId}")]
+        public async Task<IActionResult> RemoveProject([FromRoute] int ProjectId){
+            try{
+                _efCoreHelper.RemoveSingle<Project,int>(_context,ProjectId);
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch(Exception e){
+                return BadRequest(new { Result = e.ToString() });
+            }
+        }
+
         [HttpGet("DatasetList")]
         public async Task<IActionResult> GetDataSetList(){
             var dataSetList = _efCoreHelper.GetList<DataSet>(_context).Select(x => new {Label=x.DataSetName,Value = x.DataSetId, Type= x.DataType}).ToList();

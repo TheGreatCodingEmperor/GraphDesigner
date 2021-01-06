@@ -34,21 +34,29 @@ namespace GraphDesigner.Controllers {
                             TableName = dataset.DataSetName,
                             Data = dataset.Data
                         };
-            var queryList = query.ToList();
+            var projectDataSets = query.ToList();
             //組合 joinLine[]
             var joinLines = new List<JoinLine>();
             foreach(var item in body.Lines){
                 var tmp = new JoinLine(){
-                    FromTableName = queryList.SingleOrDefault(x => x.TableId == item.FromTableId).TableName,
-                    ToTableName = queryList.SingleOrDefault(x => x.TableId == item.ToTableId).TableName,
+                    FromTableName = projectDataSets.SingleOrDefault(x => x.TableId == item.FromTableId).TableName,
+                    ToTableName = projectDataSets.SingleOrDefault(x => x.TableId == item.ToTableId).TableName,
                     FromColName = item.FromColName,
                     ToColName = item.ToColName
                 };
                 joinLines.Add(tmp);
             }
-            //組合 data:[{}]
+
+            // 名稱對應唯一編號
+            var nameIds = new List<dynamic>();
+            //組合 data:{"TableName1":[{}],"TableName2":[]}
             var datas = new Dictionary<string, List<Dictionary<string, object>>> ();
-            foreach (var item in queryList) {
+            foreach (var item in projectDataSets) {
+                var tmp = new {
+                    Name = item.TableName,
+                    Id = item.TableId
+                };
+                nameIds.Add(tmp);
                 datas[item.TableName] = JsonConvert.DeserializeObject<List<Dictionary<string, object>>> (item.Data);
             }
             //joinhelper multijoin
@@ -57,7 +65,7 @@ namespace GraphDesigner.Controllers {
             if(result.Status != 200){
                 return BadRequest(new {result= result.Result});
             }
-            return Ok(JsonConvert.SerializeObject(result.Result,Formatting.Indented));
+            return Ok(JsonConvert.SerializeObject(new {Tables = nameIds,Data = result.Result},Formatting.Indented));
         }
     }
     public class JoinResultDto{

@@ -79,7 +79,7 @@
         <button mat-button (click)="getDatas()">Get Datas</button>
         <button mat-button (click)="saveLinesAndTables()">save</button>
         <button mat-button (click)="remove()">Remove</button>
-        <button mat-button (click)="joinResult()">JoinResult</button>
+        <button mat-button [color]="hasForeignKey()?'':'warn'" (click)="joinResult()">JoinResult</button>
         <!-- 右側可拖曳資料集選項 隱藏/顯示按鈕 -->
         <button mat-raised-button color="primary" (click)="cols.toggle()" style="position: fixed;right:5px;bottom: 10px;">
             <mat-icon matTooltip="open" *ngIf="!cols.opened">keyboard_arrow_left</mat-icon>

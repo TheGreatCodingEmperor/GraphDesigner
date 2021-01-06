@@ -32,11 +32,11 @@ export class DatasetManagerComponent implements AfterViewInit {
   ) { }
 
   ngAfterViewInit() {
-    this.GetProjectList();
+    this.GetDataSetList();
     this.dataSource.paginator = this.paginator;
   }
 
-  GetProjectList() {
+  GetDataSetList() {
     this.datasetManagerService.GetDataSetMangerList().subscribe((res: DatasetListItem[]) => {
       this.dataSource = new MatTableDataSource<IDatasetListItem>(res);
     })
@@ -62,6 +62,16 @@ export class DatasetManagerComponent implements AfterViewInit {
     }
   }
 
+  removeDataSet(projectId:number){
+    this.datasetManagerService.RemoveDataSet(projectId).subscribe(res=>{
+      this.openSnackBar("Delete Successful!");
+      this.GetDataSetList();
+    },error=>{
+      this.openSnackBar("Delete Failed!");
+      this.GetDataSetList();
+    })
+  }
+
   openDialog(datset: IDataSetEditUI) {
     const dialogRef = this.dialog.open(DatasetEditorComponent, {
       width: '50vw',
@@ -71,7 +81,7 @@ export class DatasetManagerComponent implements AfterViewInit {
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');
       if (result) {
-        this.GetProjectList();
+        this.GetDataSetList();
       }
     });
   }
