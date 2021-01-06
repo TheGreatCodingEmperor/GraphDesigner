@@ -33,11 +33,11 @@ export class MapDesignerComponent implements OnInit {
       type: 'projection',
       name: 'Projection',
       attr: {
-        longitude: 120,
-        latitude: 23.45,
-        scale: 20000,
-        offsetX: 0,
-        offsetY: 0,
+        longitude: 121.51,
+        latitude: 25.07,
+        scale: 12000,
+        offsetX: 200,
+        offsetY: 200,
       }
     },
     {
@@ -69,7 +69,7 @@ export class MapDesignerComponent implements OnInit {
     this.projectId = Number(this.route.snapshot.queryParamMap.get("ProjectId"));
     this.mapDesignerService.GetMap(this.projectId).subscribe(res => {
       this.mainTopo = res;
-      // this.getSpicific("台北市")
+      // this.getSpicific("高雄市")
       this.tooltip = this.buildTooltip();
       let zoom = this.buildZoom();
       let svg = this.buildSvg(zoom);
@@ -185,7 +185,7 @@ export class MapDesignerComponent implements OnInit {
       })
       .on("mousemove", (e, d) => {
         this.tooltip
-          .html(d.properties.COUNTYNAME + '<br> hello')
+          .html(d.properties.COUNTYNAME)
           .style("left", e.pageX + 10 + "px")
           .style("top", e.pageY + 10 + "px");
         d3.select(`#${d.properties.TOWNID}`).attr("fill", "red");
@@ -202,7 +202,7 @@ export class MapDesignerComponent implements OnInit {
       .append("circle")
       .attr("cx", d => this.topoCoorX(d, path))
       .attr("cy", d => this.topoCoorY(d, path))
-      .attr("r", 3)
+      .attr("r", '3')
       .attr("fill", "yellow")
       .attr("stroke", "grey")
       .attr("stroke-width", 0.5)

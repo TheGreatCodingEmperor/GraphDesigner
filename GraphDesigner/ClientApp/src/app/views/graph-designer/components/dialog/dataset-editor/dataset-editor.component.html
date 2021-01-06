@@ -50,6 +50,20 @@
     <div *ngIf="data.DataType == 1 || data.DataType == 2">
         <!-- json -->
         <input type="file" (change)="onFileChange($event)" accept=".json" />
+
+        <mat-form-field appearance="legacy">
+            <mat-label>Center Longitude</mat-label>
+            <input [(ngModel)]="data.CenterLongitude" matInput type="number" placeholder="Center Longitude">
+        </mat-form-field>
+        <mat-form-field appearance="legacy">
+            <mat-label>Center Latitude</mat-label>
+            <input [(ngModel)]="data.CenterLatitude" matInput type="number" placeholder="Center Latitude">
+        </mat-form-field>
+        <mat-form-field appearance="legacy">
+            <mat-label>Scale</mat-label>
+            <input [(ngModel)]="data.Scale" matInput type="number" placeholder="Scale">
+        </mat-form-field>
+
         <mat-radio-group (change)="handleChange($event)">
             <mat-radio-button *ngFor="let page of dataPages" class="example-margin" [value]="page">{{page}}
             </mat-radio-button>

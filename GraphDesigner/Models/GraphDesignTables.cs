@@ -7,11 +7,13 @@ namespace GraphDesigner.Models {
         public int DataType { get; set; }
         public string Schema { get; set; }
         public string DataSetName { get; set; }
+        public float? CenterLongitude {get;set;}
+        public float? CenterLatitude {get;set;}
+        public int? Scale {get;set;}
         public string Roles { get; set; }
         public string OrganizationId { get; set; }
         public string Data { get; set; }
     }
-
     public class Project {
         [Key]
         public int ProjectId { get; set; }

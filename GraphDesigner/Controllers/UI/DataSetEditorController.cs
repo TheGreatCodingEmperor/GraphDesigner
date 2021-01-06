@@ -47,10 +47,13 @@ namespace GraphDesigner.Controllers {
                 }
 
 
-                return Ok (JsonConvert.SerializeObject (new {
+                return Ok (JsonConvert.SerializeObject (new{
                     DataSetId = DataSetEdit.DataSetId,
                         DataType = DataSetEdit.DataType,
                         DataSetName = DataSetEdit.DataSetName,
+                        CenterLatitude = DataSetEdit.CenterLatitude,
+                        CenterLongitude = DataSetEdit.CenterLongitude,
+                        Scale = DataSetEdit.Scale,
                         Schema = schema,
                         Data = data
                 }, Formatting.Indented));

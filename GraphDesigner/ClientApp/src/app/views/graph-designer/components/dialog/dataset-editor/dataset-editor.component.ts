@@ -21,6 +21,7 @@ export class DatasetEditorComponent implements OnInit {
   jsonText = "";
   gridData=new MatTableDataSource<any>([]);
 
+  /** @summary topojson=>geojson */
   features =new MatTableDataSource<any>([]);
   properties = [];
 
@@ -116,7 +117,8 @@ export class DatasetEditorComponent implements OnInit {
         break;
       }
       case 1:{
-        this.features.data =t.feature(this.importJson, this.importJson.objects[event.value]).features;
+        // this.features.data = t.feature(this.importJson, this.importJson.objects[event.value]).features;
+        this.features.data = this.importJson.objects[event.value].geometries;
         this.features.paginator = this.paginator;
         this.properties = this.data.Schema[event.value];
         break;
@@ -153,6 +155,9 @@ export class DatasetEditorComponent implements OnInit {
       DataSetId: this.data.DataSetId,
       DataSetName: this.data.DataSetName,
       DataType: this.data.DataType,
+      CenterLatitude: this.data.CenterLatitude,
+      CenterLongitude: this.data.CenterLongitude,
+      Scale: this.data.Scale,
       Schema: schema,
       Data: data
     }
