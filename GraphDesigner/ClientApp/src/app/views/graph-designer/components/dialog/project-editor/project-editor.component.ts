@@ -62,6 +62,7 @@ export class ProjectEditorComponent implements OnInit {
     this.projectEditorService.SaveProjectEdit({project:projectEditDb,projectDataIds:this.data.project.ProjectDataIds}).subscribe(
       res=>{
         console.log(res);
+        this.data.project.ProjectId = res.projectId;
         this.openSnackBar("Save Successed!");
       },
       error=>{

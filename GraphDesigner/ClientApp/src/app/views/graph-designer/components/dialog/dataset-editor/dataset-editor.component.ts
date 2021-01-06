@@ -79,6 +79,7 @@ export class DatasetEditorComponent implements OnInit {
       this.importJson = data;
       this.jsonText = data.slice(0, 300).concat("...");
       let dataJson = JSON.parse(data);
+      console.log(dataJson);
 
       let objects = Object.keys(dataJson.objects);
       let result = {};
@@ -88,7 +89,7 @@ export class DatasetEditorComponent implements OnInit {
       this.data.Schema = result;
       // console.log(data);
     }
-    reader.readAsBinaryString(file);
+    reader.readAsText(file);
   }
 
   /** @summary excel 選擇資料表 */

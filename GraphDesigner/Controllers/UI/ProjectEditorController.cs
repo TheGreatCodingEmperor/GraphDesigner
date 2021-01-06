@@ -33,7 +33,7 @@ namespace GraphDesigner.Controllers {
                 }
                 var projectDatas = _efCoreHelper.GetList<ProjectDatas> (_context).Where (x => x.ProjectId == Id).ToList ();
                 var mainTableId = projectDatas.SingleOrDefault (x => x.IsProjectMainTable == true)?.DataSetId;
-                var projectDataIds = projectDatas.Where (x => x.IsProjectMainTable != true).Select (x => x.DataSetId).ToList ();
+                var projectDataIds = projectDatas.Select (x => x.DataSetId).ToList ();
                 await Task.CompletedTask;
                 return Ok (JsonConvert.SerializeObject (new {
                     ProjectId = project.ProjectId,
@@ -57,7 +57,10 @@ namespace GraphDesigner.Controllers {
 
                 //現有 project datas(n筆)
                 var currrentProjectDatas = _efCoreHelper.GetList<ProjectDatas> (_context).Where (x => x.ProjectId == body.project.ProjectId).ToList ();
-                body.projectDataIds = body.projectDataIds.Concat(new int[1]{(int)body.project.MainTableId}).ToArray();
+                var repeatMainTableId = body.projectDataIds.ToList().FirstOrDefault(x => x==body.project.MainTableId);
+                if(repeatMainTableId == 0){
+                    body.projectDataIds = body.projectDataIds.Where(x => x!=body.project.MainTableId).Concat(new int[]{(int)body.project.MainTableId}).ToArray();
+                }
 
                 //input、current datasetId 相同
                 foreach (var tableId in body.projectDataIds) {
@@ -67,18 +70,17 @@ namespace GraphDesigner.Controllers {
                         currrentProjectDatas = currrentProjectDatas.Where (x => x.DataSetId != tableId).ToList ();
                         if(tableId == body.project.MainTableId){
                             exist.IsProjectMainTable = true;
-                            _efCoreHelper.PatchSingle<ProjectDatas>(_context,exist,true);
                         }
                         else{
                             exist.IsProjectMainTable = false;
-                            _efCoreHelper.PatchSingle<ProjectDatas>(_context,exist,true);
                         }
+                        _efCoreHelper.PatchSingle<ProjectDatas>(_context,exist,true);
                     }
                 }
                 
                 //current 有 input 沒有
                 foreach (var table in currrentProjectDatas) {
-                    _efCoreHelper.RemoveSingle<ProjectDatas, int> (_context, table.DataSetId, true);
+                    _efCoreHelper.RemoveSingle<ProjectDatas, int> (_context, table.ProjectDataId, true);
                 }
                 await _context.SaveChangesAsync ();
 
@@ -98,7 +100,7 @@ namespace GraphDesigner.Controllers {
                 }
                 await _context.SaveChangesAsync ();
 
-                return Ok (new { ProjectId = body.project.ProjectId });
+                return Ok (new { ProjectId =inputProject.ProjectId });
             } catch (Exception e) {
                 return BadRequest (new { Result = e.ToString () });
             }

@@ -201,7 +201,7 @@ export class MapDesignerComponent implements OnInit {
           .append("circle")
           .attr("cx", d => this.topoCoorX(d, path))
           .attr("cy", d => this.topoCoorY(d, path))
-          .attr("r", 5)
+          .attr("r", 3)
           .attr("fill", "yellow")
           .attr("stroke", "grey")
           .attr("stroke-width", 0.5)
@@ -255,7 +255,7 @@ export class MapDesignerComponent implements OnInit {
         this.g
           .selectAll("circle")
           .attr("transform", event.transform)
-          .attr("r", (5 * 1.5) / event.transform.k).attr("stroke-width", (0.5 * 1.5) / event.transform.k);
+          .attr("r", (5) / event.transform.k).attr("stroke-width", (0.5 * 1.5) / event.transform.k);
       });
   }
 
