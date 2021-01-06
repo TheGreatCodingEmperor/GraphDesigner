@@ -57,6 +57,10 @@ export class ProjectManagerComponent implements AfterViewInit {
     })
   }
 
+  gotoMap(ProjectId:string|number){
+    this.router.navigate(['/map'],{queryParams:{ProjectId:ProjectId}});
+  }
+
   /** @summary 彈跳視窗 編輯 project 屬性 */
   editProject(projectId?: string | number) {
     if (projectId) {

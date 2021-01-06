@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import * as d3 from "d3";
 import * as t from "topojson";
+import { MapDesignerService } from '../../services/map-designer.service';
 
 @Component({
   selector: 'app-map-designer',
@@ -9,6 +11,7 @@ import * as t from "topojson";
 })
 export class MapDesignerComponent implements OnInit {
 
+  projectId = 0;
   public width = 500;
   public height = 500;
   private g: any;
@@ -17,53 +20,73 @@ export class MapDesignerComponent implements OnInit {
   /** @summary 游標彈跳文字框 */
   public tooltip: any;
   public layers = [
-    {name:"",mainTable:[],join:[]},
-    {name:"",mainTable:[],join:[]},
-    {name:"",mainTable:[],join:[]},
-    {name:"",mainTable:[],join:[]},
+    { name: "", mainTable: [], join: [] },
+    { name: "", mainTable: [], join: [] },
+    { name: "", mainTable: [], join: [] },
+    { name: "", mainTable: [], join: [] },
   ];
+
+  mainTopo:any;
 
   public schema = [
     {
-      type:'projection',
-      name:'Projection',
-      attr:{
-        longitude:120.31041,
+      type: 'projection',
+      name: 'Projection',
+      attr: {
+        longitude: 120.31041,
         latitude: 22.64889,
-        scale:20000,
-        offsetX:200,
-        offsetY:500
+        scale: 20000,
+        offsetX: 200,
+        offsetY: 500
       }
     },
     {
-      type:'rect',
-      name:'Background',
-      attr:{
+      type: 'rect',
+      name: 'Background',
+      attr: {
         backgroundColor: 'grey'
       }
     },
     {
-      type:'area',
-      name:'Area'
+      type: 'area',
+      name: 'Area'
     },
     {
-      type:'bubble',
-      name:'Hospital'
+      type: 'bubble',
+      name: 'Hospital'
     },
     {
 
     }
   ]
 
+  constructor(
+    private mapDesignerService: MapDesignerService,
+    private route: ActivatedRoute
+  ) { }
+
   ngOnInit() {
-    this.tooltip = this.buildTooltip();
-    let zoom = this.buildZoom();
-    let svg = this.buildSvg(zoom);
-    let projection = this.setProjection();
-    let path = this.buildPath(projection);
-    let rect = this.buildRect(svg);
-    let area = this.buildArea(svg, path);
-    let zoomBtn = this.buildZoomBtn();
+    this.projectId = Number(this.route.snapshot.queryParamMap.get("ProjectId"));
+    this.mapDesignerService.GetMap(this.projectId).subscribe(res => {
+      this.mainTopo = res;
+      // this.getSpicific("高雄市")
+      this.tooltip = this.buildTooltip();
+      let zoom = this.buildZoom();
+      let svg = this.buildSvg(zoom);
+      let projection = this.setProjection();
+      let path = this.buildPath(projection);
+      let rect = this.buildRect(svg);
+      let area = this.buildArea(svg, path);
+      let zoomBtn = this.buildZoomBtn();
+    },error=>{});
+  }
+
+  getSpicific(name:string){
+    let newMap = JSON.parse(JSON.stringify(this.mainTopo));
+    newMap.objects.towns.geometries = newMap.objects.towns.geometries.filter(x => x.properties.COUNTYNAME==name);
+    newMap.objects.villages.geometries = newMap.objects.villages.geometries.filter(x => x.properties.COUNTYNAME==name);
+    newMap.objects.counties.geometries = newMap.objects.counties.geometries.filter(x => x.properties.COUNTYNAME==name);
+    console.log(JSON.stringify(newMap));
   }
 
   topoCoorX(d: any, path: any) {
@@ -144,8 +167,9 @@ export class MapDesignerComponent implements OnInit {
   /** @summary Topojson 區域 */
   buildArea(svg, path) {
     this.g = svg.append("g");
-    d3.json("https://cdn.jsdelivr.net/npm/taiwan-atlas/villages-10t.json").then(
-      (data: any) => {
+    // d3.json("https://cdn.jsdelivr.net/npm/taiwan-atlas/villages-10t.json").then(
+    //   (data: any) => {
+      let data = this.mainTopo;
         this.g
           .selectAll("path")
           .data(t.feature(data, data.objects.towns).features)
@@ -215,8 +239,8 @@ export class MapDesignerComponent implements OnInit {
               )
               .attr("r", (5 * 1.5) / k).attr("stroke-width", (0.5 * 1.5) / k);
           });
-      }
-    );
+      // }
+    // );
   }
   /** @summary svg 地圖拖曳、放大縮小 */
   buildZoom() {
@@ -231,7 +255,7 @@ export class MapDesignerComponent implements OnInit {
         this.g
           .selectAll("circle")
           .attr("transform", event.transform)
-          .attr("r",(5 * 1.5) / event.transform.k).attr("stroke-width", (0.5 * 1.5) / event.transform.k);
+          .attr("r", (5 * 1.5) / event.transform.k).attr("stroke-width", (0.5 * 1.5) / event.transform.k);
       });
   }
 
