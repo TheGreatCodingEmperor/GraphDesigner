@@ -33,7 +33,7 @@
         </mat-radio-group>
 
         <!-- 表頭+表身 -->
-        <table mat-table [dataSource]="data.Data" cdkDropList cdkDropListOrientation="horizontal"
+        <table mat-table [dataSource]="gridData" cdkDropList cdkDropListOrientation="horizontal"
             (cdkDropListDropped)="drop($event)">
 
             <ng-container *ngFor="let head of data.Schema;let i = index;" matColumnDef="{{head}}">
@@ -50,8 +50,27 @@
     <div *ngIf="data.DataType == 1 || data.DataType == 2">
         <!-- json -->
         <input type="file" (change)="onFileChange($event)" accept=".json" />
-        {{ jsonText }}
+        <mat-radio-group (change)="handleChange($event)">
+            <mat-radio-button *ngFor="let page of dataPages" class="example-margin" [value]="page">{{page}}
+            </mat-radio-button>
+        </mat-radio-group>
+
+        <!-- 表頭+表身 -->
+        <table mat-table [dataSource]="features" cdkDropList cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="drop($event)">
+
+            <ng-container *ngFor="let head of properties;let i = index;" matColumnDef="{{head}}">
+                <th mat-header-cell *matHeaderCellDef> {{head}}
+                </th>
+                <td mat-cell *matCellDef="let element"> <input type="text" [(ngModel)]="element.properties[head]"> </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="properties"></tr>
+            <tr mat-row *matRowDef="let row; columns: properties;"></tr>
+        </table>
+        <!-- <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator> -->
+        <!-- {{ jsonText }} -->
     </div>
+    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
 
 </div>
 <div mat-dialog-actions>

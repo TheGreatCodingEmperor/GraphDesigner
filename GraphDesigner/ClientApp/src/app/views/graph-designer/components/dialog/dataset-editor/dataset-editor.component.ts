@@ -1,10 +1,12 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import * as XLSX from 'xlsx';
 import * as t from "topojson";
 import { DataSetEditDB, IDataSetEditDB, IDataSetEditUI } from '../../../models/dataset-editor';
 import { DatasetEditorService } from '../../../services/dataset-editor.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-dataset-editor',
@@ -12,10 +14,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./dataset-editor.component.css']
 })
 export class DatasetEditorComponent implements OnInit {
+  @ViewChild(MatPaginator,{static:true}) paginator: MatPaginator;
   public importExcel = {};
   importJson = null;
   dataPages = [];
   jsonText = "";
+  gridData=new MatTableDataSource<any>([]);
+
+  features =new MatTableDataSource<any>([]);
+  properties = [];
 
   constructor(public dialogRef: MatDialogRef<DatasetEditorComponent>,
     @Inject(MAT_DIALOG_DATA) public data: IDataSetEditUI,
@@ -24,9 +31,15 @@ export class DatasetEditorComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    console.log(this.data.Schema);
+    this.features = new MatTableDataSource<any>([]);
+    this.gridData = new MatTableDataSource<any>([]);
     if (this.data.DataType != 0 && this.data.Data) {
-      this.jsonText = JSON.stringify(this.data.Data).slice(0, 300).concat("...");
+      this.dataPages = Object.keys(this.data.Data.objects);
+      this.importJson = this.data.Data;
+    }
+    else if(this.data.DataType == 0){
+      this.gridData.data = this.data.Data;
+      this.gridData.paginator = this.paginator;
     }
   }
 
@@ -76,15 +89,15 @@ export class DatasetEditorComponent implements OnInit {
     const file = ev.target.files[0];
     reader.onload = (event) => {
       const data = reader.result as string;
-      this.importJson = data;
-      this.jsonText = data.slice(0, 300).concat("...");
-      let dataJson = JSON.parse(data);
-      console.log(dataJson);
+      this.importJson = JSON.parse(data);
+      // this.jsonText = data.slice(0, 300).concat("...");
+      this.dataPages = Object.keys(this.importJson.objects);
 
-      let objects = Object.keys(dataJson.objects);
+
+      let objects = Object.keys(this.importJson.objects);
       let result = {};
       for (let object of objects) {
-        result[object] = Object.keys(dataJson.objects[object].geometries[0].properties);
+        result[object] = Object.keys(this.importJson.objects[object].geometries[0].properties);
       }
       this.data.Schema = result;
       // console.log(data);
@@ -94,7 +107,21 @@ export class DatasetEditorComponent implements OnInit {
 
   /** @summary excel 選擇資料表 */
   handleChange(event) {
-    this.data.Schema = Object.keys(this.data.Data[0]);
+    // console.log(event);
+    switch(this.data.DataType){
+      case 0:{
+        this.data.Schema = Object.keys(this.data.Data[0]);
+        this.gridData.data = event;
+        this.paginator = this.paginator;
+        break;
+      }
+      case 1:{
+        this.features.data =t.feature(this.importJson, this.importJson.objects[event.value]).features;
+        this.features.paginator = this.paginator;
+        this.properties = this.data.Schema[event.value];
+        break;
+      }
+    }
   }
 
   /** @summary 取消 */
@@ -115,7 +142,7 @@ export class DatasetEditorComponent implements OnInit {
       }
       case 1: {
         schema = JSON.stringify(this.data.Schema);
-        data = JSON.stringify(JSON.parse(this.importJson));
+        data = JSON.stringify(this.importJson);
         break;
       }
       default: {

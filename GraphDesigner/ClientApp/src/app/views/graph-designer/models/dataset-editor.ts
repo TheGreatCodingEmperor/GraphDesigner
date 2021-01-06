@@ -3,7 +3,7 @@ export interface IDataSetEditUI{
     DataType:number,
     DataSetName:string,
     Schema:string[]|object,
-    Data:any[]
+    Data:any[]|any
 }
 export class DataSetEditUI implements IDataSetEditUI{
     DataSetId: number = 0;

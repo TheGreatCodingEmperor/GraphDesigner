@@ -26,18 +26,18 @@ export class MapDesignerComponent implements OnInit {
     { name: "", mainTable: [], join: [] },
   ];
 
-  mainTopo:any;
+  mainTopo: any;
 
   public schema = [
     {
       type: 'projection',
       name: 'Projection',
       attr: {
-        longitude: 120.31041,
-        latitude: 22.64889,
+        longitude: 120,
+        latitude: 23.45,
         scale: 20000,
-        offsetX: 200,
-        offsetY: 500
+        offsetX: 0,
+        offsetY: 0,
       }
     },
     {
@@ -78,14 +78,14 @@ export class MapDesignerComponent implements OnInit {
       let rect = this.buildRect(svg);
       let area = this.buildArea(svg, path);
       let zoomBtn = this.buildZoomBtn();
-    },error=>{});
+    }, error => { });
   }
 
-  getSpicific(name:string){
+  getSpicific(name: string) {
     let newMap = JSON.parse(JSON.stringify(this.mainTopo));
-    newMap.objects.towns.geometries = newMap.objects.towns.geometries.filter(x => x.properties.COUNTYNAME==name);
-    newMap.objects.villages.geometries = newMap.objects.villages.geometries.filter(x => x.properties.COUNTYNAME==name);
-    newMap.objects.counties.geometries = newMap.objects.counties.geometries.filter(x => x.properties.COUNTYNAME==name);
+    newMap.objects.towns.geometries = newMap.objects.towns.geometries.filter(x => x.properties.COUNTYNAME == name);
+    newMap.objects.villages.geometries = newMap.objects.villages.geometries.filter(x => x.properties.COUNTYNAME == name);
+    newMap.objects.counties.geometries = newMap.objects.counties.geometries.filter(x => x.properties.COUNTYNAME == name);
     console.log(JSON.stringify(newMap));
   }
 
@@ -142,6 +142,7 @@ export class MapDesignerComponent implements OnInit {
   setProjection() {
     let projectionConfig = this.schema.find(x => x.type == 'projection');
     return d3
+      // .geoEqualEarth()
       .geoMercator()
       .center([projectionConfig.attr.longitude, projectionConfig.attr.latitude])
       .scale(projectionConfig.attr.scale)
@@ -169,84 +170,85 @@ export class MapDesignerComponent implements OnInit {
     this.g = svg.append("g");
     // d3.json("https://cdn.jsdelivr.net/npm/taiwan-atlas/villages-10t.json").then(
     //   (data: any) => {
-      let data = this.mainTopo;
+    let data = this.mainTopo;
+    this.g
+      .selectAll("path")
+      .data(t.feature(data, data.objects.towns).features)
+      .enter()
+      .append("path")
+      .attr("d", path)
+      .attr("id", (d) => { return `${d.properties.TOWNID}` })
+      .attr("stroke", "white")
+      .attr("stroke-width", "0.25px")
+      .on("mouseenter", (e, d) => {
+        this.tooltip.style("opacity", 1);
+      })
+      .on("mousemove", (e, d) => {
+        this.tooltip
+          .html(d.properties.COUNTYNAME + '<br> hello')
+          .style("left", e.pageX + 10 + "px")
+          .style("top", e.pageY + 10 + "px");
+        d3.select(`#${d.properties.TOWNID}`).attr("fill", "red");
+      })
+      .on("mouseleave", (e, d) => {
+        this.tooltip.style("opacity", 0);
+        d3.select(`#${d.properties.TOWNID}`).attr("fill", null);
+      });
+
+    this.g
+      .selectAll("circle")
+      .data(t.feature(data, data.objects.towns).features)
+      .enter()
+      .append("circle")
+      .attr("cx", d => this.topoCoorX(d, path))
+      .attr("cy", d => this.topoCoorY(d, path))
+      .attr("r", 3)
+      .attr("fill", "yellow")
+      .attr("stroke", "grey")
+      .attr("stroke-width", 0.5)
+      .on("mouseenter", (e, d) => {
+        this.tooltip.style("opacity", 1);
+      })
+      .on("mousemove", (e, d) => {
+        this.tooltip
+          .html(d.properties.COUNTYNAME + d.properties.TOWNNAME)
+          .style("left", e.pageX + 10 + "px")
+          .style("top", e.pageY + 10 + "px");
+      })
+      .on("mouseleave", (e, d) => {
+        this.tooltip.style("opacity", 0);
+      })
+      .on("click", (e, d) => {
+        let x = this.topoCoorX(d, path);
+        let y = this.topoCoorY(d, path);
+        let k = 5;
+        this.k = 5;
+        this.center = { x: x, y: y };
         this.g
           .selectAll("path")
-          .data(t.feature(data, data.objects.towns).features)
-          .enter()
-          .append("path")
-          .attr("d", path)
-          .attr("id", (d) => { return `${d.properties.TOWNID}` })
-          .attr("stroke", "white")
-          .attr("stroke-width", "0.25px")
-          .on("mouseenter", (e, d) => {
-            this.tooltip.style("opacity", 1);
-          })
-          .on("mousemove", (e, d) => {
-            this.tooltip
-              .html(d.properties.COUNTYNAME)
-              .style("left", e.pageX + 10 + "px")
-              .style("top", e.pageY + 10 + "px");
-            d3.select(`#${d.properties.TOWNID}`).attr("fill", "red");
-          })
-          .on("mouseleave", (e, d) => {
-            this.tooltip.style("opacity", 0);
-            d3.select(`#${d.properties.TOWNID}`).attr("fill", null);
-          });
-
+          .attr(
+            "transform",
+            `translate(${this.width / 2},${this.height /
+            2}) scale(${k}) translate(${-x},${-y})`
+          );
         this.g
           .selectAll("circle")
-          .data(t.feature(data, data.objects.towns).features)
-          .enter()
-          .append("circle")
-          .attr("cx", d => this.topoCoorX(d, path))
-          .attr("cy", d => this.topoCoorY(d, path))
-          .attr("r", 3)
-          .attr("fill", "yellow")
-          .attr("stroke", "grey")
-          .attr("stroke-width", 0.5)
-          .on("mouseenter", (e, d) => {
-            this.tooltip.style("opacity", 1);
-          })
-          .on("mousemove", (e, d) => {
-            this.tooltip
-              .html(d.properties.COUNTYNAME + d.properties.TOWNNAME)
-              .style("left", e.pageX + 10 + "px")
-              .style("top", e.pageY + 10 + "px");
-          })
-          .on("mouseleave", (e, d) => {
-            this.tooltip.style("opacity", 0);
-          })
-          .on("click", (e, d) => {
-            let x = this.topoCoorX(d, path);
-            let y = this.topoCoorY(d, path);
-            let k = 5;
-            this.k = 5;
-            this.center = { x: x, y: y };
-            this.g
-              .selectAll("path")
-              .attr(
-                "transform",
-                `translate(${this.width / 2},${this.height /
-                2}) scale(${k}) translate(${-x},${-y})`
-              );
-            this.g
-              .selectAll("circle")
-              .attr(
-                "transform",
-                `translate(${this.width / 2},${this.height /
-                2}) scale(${k}) translate(${-x},${-y})`
-              )
-              .attr("r", (5 * 1.5) / k).attr("stroke-width", (0.5 * 1.5) / k);
-          });
-      // }
+          .attr(
+            "transform",
+            `translate(${this.width / 2},${this.height /
+            2}) scale(${k}) translate(${-x},${-y})`
+          )
+          .attr("r", (5 * 1.5) / k).attr("stroke-width", (0.5 * 1.5) / k);
+      });
+    // }
     // );
   }
+
   /** @summary svg 地圖拖曳、放大縮小 */
   buildZoom() {
     return d3
       .zoom()
-      .scaleExtent([1, 8])
+      .scaleExtent([-10, 80])
       .on("zoom", event => {
         // console.log(event.transform);
         this.k = event.transform.k;
@@ -255,7 +257,7 @@ export class MapDesignerComponent implements OnInit {
         this.g
           .selectAll("circle")
           .attr("transform", event.transform)
-          .attr("r", (3+event.transform.k) / event.transform.k).attr("stroke-width", (0.5 * 1.5) / event.transform.k);
+          .attr("r", (3 + event.transform.k) / event.transform.k).attr("stroke-width", (0.5 * 1.5) / event.transform.k);
       });
   }
 
